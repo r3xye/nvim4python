@@ -49,3 +49,17 @@ require("which-key").setup({
     v = { "j", "k" },
   },
 })
+
+-- Register keymaps
+local wk = require("which-key")
+wk.register({
+  ["<leader>b"] = { name = "Buffers" },
+  ["<leader>c"] = { name = "Code/LSP" },
+  ["<leader>d"] = { name = "Debug" },
+  ["<leader>f"] = { name = "Find/Telescope" },
+  ["<leader>g"] = { name = "Git" },
+  ["<leader>h"] = { name = "Git Hunk" },
+  ["<leader>n"] = { name = "Neotree" },
+  ["<leader>t"] = { name = "Toggle" },
+  ["<leader>w"] = { name = "Window" },
+})

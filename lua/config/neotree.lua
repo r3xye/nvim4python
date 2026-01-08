@@ -11,7 +11,15 @@ require("neo-tree").setup({
       hide_gitignored = false,
     },
   },
+  window = {
+    mappings = {
+      ["<leader>o"] = "open",
+      ["<leader>c"] = "close_node",
+    },
+  },
 })
 
 -- Keymaps for Neotree
 vim.keymap.set("n", "<leader>e", "<cmd>Neotree toggle<cr>", { desc = "Toggle Neotree" })
+vim.keymap.set("n", "<leader>nf", "<cmd>Neotree focus<cr>", { desc = "Focus Neotree" })
+vim.keymap.set("n", "<leader>nr", "<cmd>Neotree reveal<cr>", { desc = "Reveal current file in Neotree" })
