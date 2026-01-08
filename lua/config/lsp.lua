@@ -16,6 +16,9 @@ lspconfig.pyright.setup({
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
       },
+      completion = {
+        completeFunctionParens = true,
+      },
     },
   },
 })
