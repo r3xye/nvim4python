@@ -32,8 +32,9 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    event = "VeryLazy",
     config = function()
-      require("config.treesitter")
+      pcall(require, "config.treesitter")
     end,
   },
 
