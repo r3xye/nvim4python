@@ -16,13 +16,47 @@ local themes = {
   "sonokai",
 }
 
+local theme_state_file = vim.fn.stdpath("state") .. "/theme.txt"
 local current_theme_index = 1
+
+local function read_saved_theme()
+  local f = io.open(theme_state_file, "r")
+  if not f then
+    return nil
+  end
+  local name = f:read("*l")
+  f:close()
+  if name and name ~= "" then
+    return name
+  end
+  return nil
+end
+
+local function save_theme(name)
+  local f = io.open(theme_state_file, "w")
+  if not f then
+    return
+  end
+  f:write(name)
+  f:close()
+end
+
+local function apply_theme(name)
+  local ok = pcall(vim.cmd.colorscheme, name)
+  if ok then
+    save_theme(name)
+    return true
+  end
+  return false
+end
 
 -- Function to cycle themes
 function CycleTheme()
   current_theme_index = current_theme_index % #themes + 1
-  vim.cmd.colorscheme(themes[current_theme_index])
-  print("Theme: " .. themes[current_theme_index])
+  local theme = themes[current_theme_index]
+  if apply_theme(theme) then
+    print("Theme: " .. theme)
+  end
 end
 
 -- Function to select theme with Telescope
@@ -44,8 +78,9 @@ function SelectTheme()
       actions.select_default:replace(function()
         actions.close(prompt_bufnr)
         local selection = action_state.get_selected_entry()
-        vim.cmd.colorscheme(selection[1])
-        print("Theme: " .. selection[1])
+        if apply_theme(selection[1]) then
+          print("Theme: " .. selection[1])
+        end
       end)
       return true
     end,
@@ -58,5 +93,18 @@ vim.keymap.set("n", "<leader>tt", CycleTheme, { desc = "Cycle themes" })
 -- Keymap to select theme
 vim.keymap.set("n", "<leader>ts", SelectTheme, { desc = "Select theme" })
 
--- Set initial theme
-vim.cmd.colorscheme(themes[current_theme_index])
+-- Set initial theme (restore saved theme if available)
+local saved_theme = read_saved_theme()
+if saved_theme then
+  for i, name in ipairs(themes) do
+    if name == saved_theme then
+      current_theme_index = i
+      break
+    end
+  end
+  if not apply_theme(saved_theme) then
+    apply_theme(themes[current_theme_index])
+  end
+else
+  apply_theme(themes[current_theme_index])
+end

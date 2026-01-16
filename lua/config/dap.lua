@@ -12,8 +12,5 @@ vim.keymap.set("n", "<leader>b", dap.toggle_breakpoint, { desc = "Toggle breakpo
 vim.keymap.set("n", "<leader>B", function()
   dap.set_breakpoint(vim.fn.input("Breakpoint condition: "))
 end, { desc = "Set conditional breakpoint" })
-vim.keymap.set("n", "<leader>lp", function()
-  dap.set_breakpoint(nil, nil, vim.fn.input("Log point message: "))
-end, { desc = "Set log point" })
 vim.keymap.set("n", "<leader>dr", dap.repl.open, { desc = "Open REPL" })
 vim.keymap.set("n", "<leader>dl", dap.run_last, { desc = "Run last" })

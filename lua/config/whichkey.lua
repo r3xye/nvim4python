@@ -56,10 +56,11 @@ wk.register({
   ["<leader>b"] = { name = "Buffers" },
   ["<leader>c"] = { name = "Code/LSP" },
   ["<leader>d"] = { name = "Debug" },
-  ["<leader>f"] = { name = "Find/Telescope" },
+  ["<leader>e"] = { name = "Explorer" },
+  ["<leader>f"] = { name = "Files/Find" },
   ["<leader>g"] = { name = "Git" },
   ["<leader>h"] = { name = "Git Hunk" },
-  ["<leader>n"] = { name = "Neotree" },
+  ["<leader>p"] = { name = "Python" },
   ["<leader>t"] = { name = "Toggle" },
   ["<leader>w"] = { name = "Window" },
 })

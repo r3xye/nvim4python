@@ -9,6 +9,7 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 vim.opt.smartindent = true
 vim.opt.termguicolors = true
+vim.opt.clipboard = "unnamedplus"
 vim.opt.cursorline = true
 vim.opt.wrap = false
 vim.opt.ignorecase = true
@@ -58,3 +59,6 @@ require("config.winshift")
 require("config.whichkey")
 require("config.surround")
 require("config.themes")
+require("config.terminal")
+require("config.keymaps")
+require("config.tests")

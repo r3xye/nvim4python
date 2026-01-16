@@ -43,7 +43,6 @@ Full-featured Neovim configuration for Python development, comparable to Visual 
 - `gd` - go to definition
 - `gr` - go to references
 - `K` - hover documentation
-- `<leader>rn` - rename
 - `<leader>ca` - code action
 - `<leader>f` - format
 - `<F5>` - start debugging

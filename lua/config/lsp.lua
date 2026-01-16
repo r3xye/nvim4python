@@ -12,7 +12,8 @@ lspconfig.pyright.setup({
   settings = {
     python = {
       analysis = {
-        typeCheckingMode = "basic",
+        typeCheckingMode = "strict",
+        diagnosticMode = "workspace",
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
       },
@@ -42,6 +43,5 @@ lspconfig.lua_ls.setup({
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
 vim.keymap.set("n", "gr", vim.lsp.buf.references, { desc = "Go to references" })
 vim.keymap.set("n", "K", vim.lsp.buf.hover, { desc = "Hover" })
-vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { desc = "Rename" })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
 vim.keymap.set("n", "<leader>f", function() vim.lsp.buf.format { async = true } end, { desc = "Format" })

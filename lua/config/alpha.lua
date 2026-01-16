@@ -9,7 +9,6 @@ dashboard.section.header.val = {
   " ██║     ╚██████╔╝██║     ██║  ██║██║ ╚═╝ ██║╚██████╔╝██║     ██║  ██║",
   " ╚═╝      ╚═════╝ ╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝",
   "",
-  "                    PUPAMUPA",
 }
 
 dashboard.section.buttons.val = {
@@ -19,7 +18,6 @@ dashboard.section.buttons.val = {
   dashboard.button("s", "  Settings", ":e $MYVIMRC <CR>"),
   dashboard.button("q", "  Quit", ":qa<CR>"),
 }
-
-dashboard.section.footer.val = "Welcome to Neovim!"
+dashboard.section.footer.val = ""
 
 alpha.setup(dashboard.opts)
