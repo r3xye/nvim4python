@@ -1,4 +1,5 @@
 require("which-key").setup({
+  notify = false,
   plugins = {
     marks = true,
     registers = true,
@@ -16,37 +17,29 @@ require("which-key").setup({
       g = false,
     },
   },
-  operators = { gc = "Comments" },
-  key_labels = {},
   icons = {
     breadcrumb = "»",
     separator = "➜",
     group = "+",
   },
-  popup_mappings = {
+  keys = {
     scroll_down = "<c-d>",
     scroll_up = "<c-u>",
   },
-  window = {
+  win = {
     border = "rounded",
-    position = "bottom",
-    margin = { 1, 0, 1, 0 },
-    padding = { 2, 2, 2, 2 },
-    winblend = 0,
+    padding = { 2, 2 },
+    wo = {
+      winblend = 0,
+    },
   },
   layout = {
-    height = { min = 4, max = 25 },
     width = { min = 20, max = 50 },
     spacing = 3,
-    align = "left",
   },
-  ignore_missing = true,
-  hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ " },
   show_help = true,
-  triggers = "auto",
-  triggers_blacklist = {
-    i = { "j", "k" },
-    v = { "j", "k" },
+  triggers = {
+    { "<auto>", mode = "nxso" },
   },
 })
 
@@ -60,7 +53,9 @@ wk.register({
   ["<leader>f"] = { name = "Files/Find" },
   ["<leader>g"] = { name = "Git" },
   ["<leader>h"] = { name = "Git Hunk" },
+  ["<leader>o"] = { name = "Open" },
   ["<leader>p"] = { name = "Python" },
-  ["<leader>t"] = { name = "Toggle" },
+  ["<leader>t"] = { name = "Typst" },
+  ["<leader>u"] = { name = "UI/Theme" },
   ["<leader>w"] = { name = "Window" },
 })

@@ -1,13 +1,12 @@
 require("mason").setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "pyright", "lua_ls" },
+  ensure_installed = { "pyright", "lua_ls", "ruff", "tinymist" },
 })
 
-local lspconfig = require("lspconfig")
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 -- Python LSP
-lspconfig.pyright.setup({
+vim.lsp.config("pyright", {
   capabilities = capabilities,
   settings = {
     python = {
@@ -29,7 +28,7 @@ lspconfig.pyright.setup({
 })
 
 -- Lua LSP
-lspconfig.lua_ls.setup({
+vim.lsp.config("lua_ls", {
   capabilities = capabilities,
   settings = {
     Lua = {
@@ -42,6 +41,21 @@ lspconfig.lua_ls.setup({
     },
   },
 })
+
+-- Ruff LSP (Python linting/formatting)
+vim.lsp.config("ruff", {
+  capabilities = capabilities,
+})
+
+-- Typst LSP (Tinymist)
+vim.lsp.config("tinymist", {
+  capabilities = capabilities,
+})
+
+vim.lsp.enable("pyright")
+vim.lsp.enable("lua_ls")
+vim.lsp.enable("ruff")
+vim.lsp.enable("tinymist")
 
 -- Keymaps for LSP
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })

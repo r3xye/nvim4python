@@ -88,10 +88,10 @@ function SelectTheme()
 end
 
 -- Keymap to cycle themes
-vim.keymap.set("n", "<leader>tt", CycleTheme, { desc = "Cycle themes" })
+vim.keymap.set("n", "<leader>uc", CycleTheme, { desc = "Theme cycle" })
 
 -- Keymap to select theme
-vim.keymap.set("n", "<leader>ts", SelectTheme, { desc = "Select theme" })
+vim.keymap.set("n", "<leader>us", SelectTheme, { desc = "Theme select" })
 
 -- Set initial theme (restore saved theme if available)
 local saved_theme = read_saved_theme()

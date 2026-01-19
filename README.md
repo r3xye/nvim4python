@@ -1,80 +1,63 @@
 # nvim4python
 
-Opinionated, full-featured Neovim configuration focused on Python development.
+Opinionated Neovim config for Python development with fast keymaps, ready-to-use LSP, and Typst support.
 
 ## Requirements
 
 - Neovim 0.9+
 - Git
-- Python 3 (for Pyright, DAP, and helper commands)
+- Python 3 (`python` or `python3`) and `pip`
+- `ripgrep` (Telescope live_grep)
+- `fd` (faster Telescope find_files)
+- `typst` (Typst compile/watch)
+- `zathura` (PDF preview for Typst)
+- `pytest` (test runner command)
+- `debugpy` (debugging via nvim-dap-python)
 
 ## Installation
 
-1. Copy the files from this repository to `~/.config/nvim`:
+1. Copy this config to `~/.config/nvim`:
    ```bash
    cp -r /path/to/nvim4python/* ~/.config/nvim/
    ```
-2. Launch Neovim. Lazy.nvim will automatically install plugins.
+2. Launch Neovim. Lazy.nvim will install plugins.
+3. Mason will install LSP servers: `pyright`, `ruff`, `lua_ls`, `tinymist`.
 
-## What is Included
+## What’s Included
 
-- **Dashboard**: Alpha-nvim with a custom ASCII header and quick actions.
-- **Themes**: 14 dark themes: Catppuccin Mocha, TokyoNight, Gruvbox, OneDark, Nightfox, Kanagawa, Dracula, Everforest, Ayu Dark, Material, GitHub Dark, Nord, Rose Pine, Sonokai. Theme choice is persisted.
-- **LSP**: Pyright (strict) for Python and Lua LSP for config editing.
-- **Completion**: nvim-cmp with LuaSnip integration.
-- **Treesitter**: Syntax highlighting for Python, Lua, Vim, Vimdoc, Query.
-- **Telescope**: File, text, buffer, and git pickers.
-- **Neo-tree**: File explorer with git/diagnostics.
-- **Statusline/Bufferline**: Lualine + Bufferline.
-- **Git**: Gitsigns with hunk actions.
-- **Debugging**: nvim-dap + nvim-dap-python.
-- **Terminal**: Built-in terminal helpers with easy split open.
-- **Editing Helpers**: Comment, autopairs, indent guides, surround.
-- **Window Tools**: WinShift for moving windows.
-- **Testing**: Pytest runner with quickfix integration.
+- **Dashboard**: alpha-nvim with a custom header.
+- **Themes**: 14 themes, selection via Telescope, persisted on restart.
+- **LSP**: Python (Pyright + Ruff), Lua (lua_ls), Typst (Tinymist).
+- **Autocomplete**: nvim-cmp + LuaSnip.
+- **Treesitter**: Python, Lua, Vim, Vimdoc, Query, Typst.
+- **Search**: Telescope (files, grep, buffers, git).
+- **Files**: Neo-tree with git and diagnostics.
+- **Status/Buffers**: lualine + bufferline.
+- **Git**: gitsigns.
+- **Debug**: nvim-dap + nvim-dap-python.
+- **Terminal**: quick split terminal.
+- **Editing**: Comment, Autopairs, Indent Blankline, Surround.
+- **Windows**: WinShift.
+- **Typst**: compile/preview/watch with autosave.
+- **Tests**: pytest in quickfix.
 
 ## Keybindings (Highlights)
 
 - `<leader>` = space
-- `<leader>e` - toggle Neo-tree
-- `<leader>ef` - focus Neo-tree
-- `<leader>er` - reveal current file in Neo-tree
-- `<leader>ff` - find files (Telescope)
-- `<leader>fg` - live grep
-- `<leader>fb` - list buffers
-- `<leader>fh` - help tags
-- `<leader>gs` - git status (Telescope)
-- `<leader>gc` - git commits (Telescope)
-- `<leader>gb` - git branches (Telescope)
-- `<leader>ts` - select theme (Telescope picker)
-- `<leader>tt` - open terminal split
-- `<leader>fr` - rename current file
-- `<leader>pv` - create project venv in `.venv`
-- `<leader>pr` - run current Python file as module
-- `<leader>tp` - run pytest (quickfix)
-- `<Tab>` / `<S-Tab>` - next/previous buffer
-- `<leader>bn` / `<leader>bp` - next/previous buffer
-- `<leader>bd` - delete buffer
-- `<C-l>` - close other buffers
-- `gd` - go to definition
-- `gr` - go to references
-- `K` - hover documentation
-- `<leader>ca` - code action
-- `<leader>f` - format
-- `<F5>` - start/continue debug
-- `<F10>` / `<F11>` / `<F12>` - step over/into/out
-- `<leader>b` - toggle breakpoint
-- `<leader>B` - set conditional breakpoint
-- `<leader>dr` - open debug REPL
-- `<leader>dl` - run last debug session
-- `<C-W>m` - WinShift (move window)
-- `<Esc>` (terminal) - return to normal mode
+- Files/Search: `<leader>ff`, `<leader>fg`, `<leader>fb`, `<leader>fh`
+- Git (Telescope): `<leader>gs`, `<leader>gc`, `<leader>gb`
+- Neo-tree: `<leader>e`, `<leader>ef`, `<leader>er`
+- Themes: `<leader>uc` (cycle), `<leader>us` (select)
+- Buffers: `<Tab>`, `<S-Tab>`, `<leader>bn`, `<leader>bp`, `<leader>bd`, `<C-l>`
+- LSP: `gd`, `gr`, `K`, `<leader>ca`, `<leader>f`
+- DAP: `<F5>`, `<F10>`, `<F11>`, `<F12>`, `<leader>b`, `<leader>B`, `<leader>dr`, `<leader>dl`
+- Python: `<leader>pv` (venv), `<leader>pr` (run module), `<leader>pt` (pytest)
+- Typst: `<leader>tc` (compile), `<leader>tv` (preview), `<leader>tw` (watch), `<leader>ts` (stop)
+- Terminal: `<leader>ot`
+- WinShift: `<C-W>m`
 
-## Theme
+## Notes
 
-Default theme is `catppuccin-mocha`. The selected theme is saved under Neovim state and restored on startup.
-
-## Troubleshooting
-
-- If plugins fail to install, check internet and restart Neovim.
-- For Python tooling, ensure `python` is available in your PATH.
+- If `typst` or `zathura` is missing, Typst commands will notify you.
+- For debugging, ensure `debugpy` is installed in the active Python environment.
+- `live_grep` requires `ripgrep` in PATH.
