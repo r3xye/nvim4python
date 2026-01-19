@@ -12,10 +12,14 @@ lspconfig.pyright.setup({
   settings = {
     python = {
       analysis = {
-        typeCheckingMode = "strict",
-        diagnosticMode = "workspace",
+        typeCheckingMode = "basic",
+        diagnosticMode = "openFilesOnly",
         autoSearchPaths = true,
         useLibraryCodeForTypes = true,
+        diagnosticSeverityOverrides = {
+          reportMissingImports = "none",
+          reportMissingTypeStubs = "none",
+        },
       },
       completion = {
         completeFunctionParens = true,
