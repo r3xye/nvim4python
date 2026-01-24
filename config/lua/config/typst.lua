@@ -1,11 +1,15 @@
 -- Typst helpers and keymaps
+local function is_typst_path(path)
+  return path:match("%.typ$") or path:match("%.typst$")
+end
+
 local function get_typst_file()
   local file = vim.api.nvim_buf_get_name(0)
   if file == "" then
     vim.notify("No file to run", vim.log.levels.WARN)
     return nil
   end
-  if not (file:match("%.typ$") or file:match("%.typst$")) then
+  if not is_typst_path(file) then
     vim.notify("Not a Typst file", vim.log.levels.WARN)
     return nil
   end
@@ -128,7 +132,7 @@ local function schedule_typst_autosave(bufnr)
   if vim.bo[bufnr].buftype ~= "" or not vim.bo[bufnr].modifiable then
     return
   end
-  if not vim.api.nvim_buf_get_name(bufnr):match("%.typst?$") then
+  if not is_typst_path(vim.api.nvim_buf_get_name(bufnr)) then
     return
   end
 
