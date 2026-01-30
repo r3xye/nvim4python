@@ -11,6 +11,7 @@ vim.opt.smartindent = true
 vim.opt.termguicolors = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.cursorline = true
+vim.opt.list = false
 vim.opt.wrap = false
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
