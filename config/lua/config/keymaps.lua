@@ -92,5 +92,63 @@ local function run_python_module_in_terminal()
   vim.api.nvim_chan_send(chan, "python -m " .. module .. "\n")
 end
 
+local function run_cpp_in_terminal()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" then
+    vim.notify("No file to run", vim.log.levels.WARN)
+    return
+  end
+  if not file:match("%.c$") and not file:match("%.cc$") and not file:match("%.cpp$") and not file:match("%.cxx$") then
+    vim.notify("Not a C/C++ file", vim.log.levels.WARN)
+    return
+  end
+
+  if vim.fn.executable("g++") ~= 1 then
+    vim.notify("g++ not found in PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  local rel = vim.fn.fnamemodify(file, ":.")
+  if rel:sub(1, 2) == ".." then
+    vim.notify("File is outside current working directory", vim.log.levels.ERROR)
+    return
+  end
+
+  local out = vim.fn.fnamemodify(file, ":t:r")
+  local cmd = string.format("g++ -std=c++20 -O0 -g %s -o %s && ./%s", rel, out, out)
+
+  vim.cmd("botright split")
+  vim.cmd("terminal")
+  vim.cmd("startinsert")
+
+  local chan = vim.b.terminal_job_id
+  if not chan then
+    vim.notify("Terminal not ready", vim.log.levels.ERROR)
+    return
+  end
+
+  vim.api.nvim_chan_send(chan, cmd .. "\n")
+end
+
+local function run_current_file()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" then
+    vim.notify("No file to run", vim.log.levels.WARN)
+    return
+  end
+
+  if file:match("%.py$") then
+    run_python_module_in_terminal()
+    return
+  end
+
+  if file:match("%.c$") or file:match("%.cc$") or file:match("%.cpp$") or file:match("%.cxx$") then
+    run_cpp_in_terminal()
+    return
+  end
+
+  vim.notify("No runner for this file type", vim.log.levels.WARN)
+end
+
 vim.keymap.set("n", "<leader>fR", rename_current_file, { desc = "Rename file" })
-vim.keymap.set("n", "<leader>rr", run_python_module_in_terminal, { desc = "Run Python module" })
+vim.keymap.set("n", "<leader>rr", run_current_file, { desc = "Run current file" })

@@ -1,6 +1,6 @@
 # nvim4python
 
-Full-featured Neovim configuration for Python development, comparable to Visual Studio Code.
+Full-featured Neovim configuration for Python and C/C++ development, comparable to Visual Studio Code.
 
 ## Installation
 
@@ -18,14 +18,14 @@ Full-featured Neovim configuration for Python development, comparable to Visual 
 - **Swap Windows**: WinShift for moving windows.
 - **Which-key**: Shows keybindings.
 - **Surround**: Work with quotes and brackets.
-- **LSP**: Pyright for Python, with autocompletion and diagnostics.
+- **LSP**: Pyright (Python) and clangd (C/C++) with autocompletion and diagnostics.
 - **Treesitter**: Syntax highlighting.
 - **Telescope**: File, text, and buffer search.
 - **Neo-tree**: File tree explorer.
 - **Lualine**: Status bar.
 - **Bufferline**: Buffer management.
 - **Gitsigns**: Git integration.
-- **DAP**: Python debugging.
+- **DAP**: Python and C/C++ debugging.
 - **Toggleterm**: Built-in terminal.
 - **Comment**: Code commenting.
 - **Autopairs**: Automatic brackets.
@@ -47,13 +47,29 @@ Full-featured Neovim configuration for Python development, comparable to Visual 
 - `<leader>f` - format
 - `<F5>` - start debugging
 - `<leader>b` - toggle breakpoint
+- `<leader>rr` - run current file (Python module or C/C++ single file)
 
 ## Theme
 
 Default theme is Catppuccin Mocha. Change in `lua/plugins/init.lua` if needed.
 
+## Running Code
+
+- **Python**: Open a `.py` file and press `<leader>rr` (runs `python -m <module>`).
+- **C/C++ (single file)**: Open a `.c/.cc/.cpp/.cxx` file and press `<leader>rr`.
+  - Runs: `g++ -std=c++20 -O0 -g <file> -o <binary> && ./<binary>`
+  - The file must be inside the current working directory.
+
 ## Troubleshooting
 
 - If plugins fail to install, check internet and restart Neovim.
 - For Python, ensure `python` and `pip` are installed.
-- For LSP: Mason will install Pyright automatically.
+- For LSP: Mason will install Pyright and clangd automatically.
+- For C/C++ debugging: install `codelldb` (recommended) or `lldb-vscode` so `nvim-dap` can launch the debugger.
+- For C/C++ compiling: ensure `g++` is installed and in PATH.
+
+## Arch Linux (recommended packages)
+
+```bash
+sudo pacman -S neovim clang codelldb
+```

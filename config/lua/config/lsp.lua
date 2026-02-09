@@ -1,6 +1,6 @@
 require("mason").setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "pyright", "lua_ls", "ruff", "tinymist" },
+  ensure_installed = { "pyright", "lua_ls", "ruff", "tinymist", "clangd" },
 })
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
@@ -52,10 +52,16 @@ vim.lsp.config("tinymist", {
   capabilities = capabilities,
 })
 
+-- C/C++ LSP (clangd)
+vim.lsp.config("clangd", {
+  capabilities = capabilities,
+})
+
 vim.lsp.enable("pyright")
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("ruff")
 vim.lsp.enable("tinymist")
+vim.lsp.enable("clangd")
 
 -- Keymaps for LSP
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })
