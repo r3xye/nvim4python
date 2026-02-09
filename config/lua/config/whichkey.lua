@@ -47,15 +47,14 @@ require("which-key").setup({
 local wk = require("which-key")
 wk.register({
   ["<leader>b"] = { name = "Buffers" },
-  ["<leader>c"] = { name = "Code/LSP" },
   ["<leader>d"] = { name = "Debug" },
   ["<leader>e"] = { name = "Explorer" },
   ["<leader>f"] = { name = "Files/Find" },
   ["<leader>g"] = { name = "Git" },
   ["<leader>h"] = { name = "Git Hunk" },
-  ["<leader>o"] = { name = "Open" },
-  ["<leader>p"] = { name = "Python" },
-  ["<leader>t"] = { name = "Typst" },
+  ["<leader>l"] = { name = "LSP" },
+  ["<leader>r"] = { name = "Run" },
+  ["<leader>t"] = { name = "Tools" },
   ["<leader>u"] = { name = "UI/Theme" },
   ["<leader>w"] = { name = "Window" },
 })

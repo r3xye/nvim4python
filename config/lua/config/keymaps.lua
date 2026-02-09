@@ -92,6 +92,5 @@ local function run_python_module_in_terminal()
   vim.api.nvim_chan_send(chan, "python -m " .. module .. "\n")
 end
 
-vim.keymap.set("n", "<leader>fr", rename_current_file, { desc = "Rename file" })
-vim.keymap.set("n", "<leader>pv", create_project_venv, { desc = "Python venv" })
-vim.keymap.set("n", "<leader>pr", run_python_module_in_terminal, { desc = "Python run module" })
+vim.keymap.set("n", "<leader>fR", rename_current_file, { desc = "Rename file" })
+vim.keymap.set("n", "<leader>rr", run_python_module_in_terminal, { desc = "Run Python module" })

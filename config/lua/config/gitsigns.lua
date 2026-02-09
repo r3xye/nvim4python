@@ -50,11 +50,11 @@ require("gitsigns").setup({
     map("n", "<leader>hb", function()
       gs.blame_line({ full = true })
     end, { desc = "Blame line" })
-    map("n", "<leader>tb", gs.toggle_current_line_blame, { desc = "Toggle blame" })
+    map("n", "<leader>hB", gs.toggle_current_line_blame, { desc = "Toggle blame" })
     map("n", "<leader>hd", gs.diffthis, { desc = "Diff this" })
     map("n", "<leader>hD", function()
       gs.diffthis("~")
     end, { desc = "Diff this ~" })
-    map("n", "<leader>td", gs.toggle_deleted, { desc = "Toggle deleted" })
+    map("n", "<leader>hT", gs.toggle_deleted, { desc = "Toggle deleted" })
   end,
 })

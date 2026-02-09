@@ -97,8 +97,19 @@ local function watch_typst()
   end
 
   vim.g.typst_watch_job_id = job_id
+  local pdf = get_pdf_path(file)
   if vim.fn.executable("zathura") == 1 then
-    vim.fn.jobstart({ "zathura", get_pdf_path(file) }, { detach = true })
+    local zathura_running = false
+    if vim.fn.executable("pgrep") == 1 then
+      local result = vim.fn.systemlist({ "pgrep", "-f", "zathura " .. pdf })
+      zathura_running = (vim.v.shell_error == 0) and (#result > 0)
+    end
+    if not zathura_running then
+      local zathura_job_id = vim.fn.jobstart({ "zathura", pdf }, { detach = true })
+      if zathura_job_id > 0 then
+        vim.g.typst_zathura_job_id = zathura_job_id
+      end
+    end
   else
     vim.notify("zathura not found in PATH", vim.log.levels.WARN)
   end
@@ -113,6 +124,10 @@ local function stop_watch_typst()
 
   vim.fn.jobstop(vim.g.typst_watch_job_id)
   vim.g.typst_watch_job_id = nil
+  if vim.g.typst_zathura_job_id then
+    vim.fn.jobstop(vim.g.typst_zathura_job_id)
+    vim.g.typst_zathura_job_id = nil
+  end
   vim.notify("Typst watch stopped", vim.log.levels.INFO)
 end
 
@@ -179,7 +194,25 @@ vim.api.nvim_create_autocmd("BufWipeout", {
   end,
 })
 
-vim.keymap.set("n", "<leader>tc", compile_typst, { desc = "Typst compile" })
-vim.keymap.set("n", "<leader>tv", preview_typst, { desc = "Typst preview" })
-vim.keymap.set("n", "<leader>tw", watch_typst, { desc = "Typst watch" })
-vim.keymap.set("n", "<leader>ts", stop_watch_typst, { desc = "Typst stop" })
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  callback = function()
+    if vim.g.typst_watch_job_id then
+      vim.fn.jobstop(vim.g.typst_watch_job_id)
+      vim.g.typst_watch_job_id = nil
+    end
+    if vim.g.typst_zathura_job_id then
+      vim.fn.jobstop(vim.g.typst_zathura_job_id)
+      vim.g.typst_zathura_job_id = nil
+    end
+  end,
+})
+
+local function toggle_watch_typst()
+  if vim.g.typst_watch_job_id and vim.fn.jobwait({ vim.g.typst_watch_job_id }, 0)[1] == -1 then
+    stop_watch_typst()
+  else
+    watch_typst()
+  end
+end
+
+vim.keymap.set("n", "<leader>rt", toggle_watch_typst, { desc = "Typst watch toggle" })

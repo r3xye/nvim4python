@@ -21,4 +21,4 @@ local function run_pytest()
   end
 end
 
-vim.keymap.set("n", "<leader>pt", run_pytest, { desc = "Python test" })
+vim.keymap.set("n", "<leader>rt", run_pytest, { desc = "Run pytest" })

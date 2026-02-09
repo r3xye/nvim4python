@@ -5,7 +5,7 @@ local function open_terminal_split()
   vim.cmd("startinsert")
 end
 
-vim.keymap.set("n", "<leader>ot", open_terminal_split, { desc = "Open terminal" })
+vim.keymap.set("n", "<leader>t", open_terminal_split, { desc = "Open terminal" })
 
 vim.api.nvim_create_autocmd("TermOpen", {
   callback = function()

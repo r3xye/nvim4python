@@ -13,8 +13,6 @@ require("bufferline").setup({
 })
 
 -- Keymaps for buffers
-vim.keymap.set("n", "<Tab>", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
-vim.keymap.set("n", "<S-Tab>", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bn", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bp", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bd", "<cmd>bdelete<cr>", { desc = "Delete buffer" })
@@ -28,4 +26,4 @@ local function close_other_buffers()
   end
 end
 
-vim.keymap.set("n", "<C-l>", close_other_buffers, { desc = "Close other buffers" })
+vim.keymap.set("n", "<leader>bo", close_other_buffers, { desc = "Close other buffers" })
