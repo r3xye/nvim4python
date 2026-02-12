@@ -15,12 +15,14 @@ return {
   "rebelot/kanagawa.nvim",
   "Mofiqul/dracula.nvim",
   "sainnhe/everforest",
+  "sainnhe/gruvbox-material",
   "Shatur/neovim-ayu",
   "marko-cerovac/material.nvim",
   "projekt0n/github-nvim-theme",
   "shaunsingh/nord.nvim",
   "rose-pine/neovim",
   "sainnhe/sonokai",
+  "bluz71/vim-nightfly-colors",
 
   -- Dashboard
   {

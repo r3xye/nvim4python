@@ -1,4 +1,5 @@
 -- Custom keymaps
+local typst = require("config.typst")
 local function rename_current_file()
   local old_path = vim.api.nvim_buf_get_name(0)
   if old_path == "" then
@@ -60,6 +61,20 @@ local function create_project_venv()
   vim.notify("Venv created: " .. venv_path, vim.log.levels.INFO)
 end
 
+local function run_in_terminal(cmd, desc)
+  if vim.fn.executable("kitty") ~= 1 then
+    vim.notify("kitty not found in PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  local cwd = vim.fn.getcwd()
+  local job_id = vim.fn.jobstart({ "kitty", "--working-directory", cwd, "--hold", "sh", "-lc", cmd }, { detach = true })
+  if job_id > 0 then
+    vim.g.last_run_job_id = job_id
+    vim.g.last_run_desc = desc or cmd
+  end
+end
+
 local function run_python_module_in_terminal()
   local file = vim.api.nvim_buf_get_name(0)
   if file == "" then
@@ -77,19 +92,20 @@ local function run_python_module_in_terminal()
     return
   end
 
-  local module = rel:gsub("%.py$", ""):gsub("/", ".")
-
-  vim.cmd("botright split")
-  vim.cmd("terminal")
-  vim.cmd("startinsert")
-
-  local chan = vim.b.terminal_job_id
-  if not chan then
-    vim.notify("Terminal not ready", vim.log.levels.ERROR)
+  local python = nil
+  if vim.fn.executable("python") == 1 then
+    python = "python"
+  elseif vim.fn.executable("python3") == 1 then
+    python = "python3"
+  end
+  if not python then
+    vim.notify("Python not found in PATH", vim.log.levels.ERROR)
     return
   end
 
-  vim.api.nvim_chan_send(chan, "python -m " .. module .. "\n")
+  local rel_escaped = vim.fn.shellescape(rel)
+  local cmd = python .. " " .. rel_escaped
+  run_in_terminal(cmd, cmd)
 end
 
 local function run_cpp_in_terminal()
@@ -114,20 +130,20 @@ local function run_cpp_in_terminal()
     return
   end
 
+  local out_dir = "compile"
   local out = vim.fn.fnamemodify(file, ":t:r")
-  local cmd = string.format("g++ -std=c++20 -O0 -g %s -o %s && ./%s", rel, out, out)
-
-  vim.cmd("botright split")
-  vim.cmd("terminal")
-  vim.cmd("startinsert")
-
-  local chan = vim.b.terminal_job_id
-  if not chan then
-    vim.notify("Terminal not ready", vim.log.levels.ERROR)
-    return
-  end
-
-  vim.api.nvim_chan_send(chan, cmd .. "\n")
+  local out_path = out_dir .. "/" .. out
+  local rel_escaped = vim.fn.shellescape(rel)
+  local out_dir_escaped = vim.fn.shellescape(out_dir)
+  local out_path_escaped = vim.fn.shellescape(out_path)
+  local cmd = string.format(
+    "mkdir -p %s && g++ -std=c++20 -O0 -g %s -o %s && %s",
+    out_dir_escaped,
+    rel_escaped,
+    out_path_escaped,
+    out_path_escaped
+  )
+  run_in_terminal(cmd, cmd)
 end
 
 local function run_current_file()
@@ -142,6 +158,11 @@ local function run_current_file()
     return
   end
 
+  if file:match("%.typ$") or file:match("%.typst$") then
+    typst.toggle_watch()
+    return
+  end
+
   if file:match("%.c$") or file:match("%.cc$") or file:match("%.cpp$") or file:match("%.cxx$") then
     run_cpp_in_terminal()
     return
@@ -151,4 +172,24 @@ local function run_current_file()
 end
 
 vim.keymap.set("n", "<leader>fR", rename_current_file, { desc = "Rename file" })
-vim.keymap.set("n", "<leader>rr", run_current_file, { desc = "Run current file" })
+vim.keymap.set("n", "<leader>r", run_current_file, { desc = "Run current file" })
+
+local function stop_last_run()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file ~= "" and (file:match("%.typ$") or file:match("%.typst$")) then
+    typst.stop()
+    vim.notify("Typst stopped", vim.log.levels.INFO)
+    return
+  end
+
+  if vim.g.last_run_job_id and vim.fn.jobwait({ vim.g.last_run_job_id }, 0)[1] == -1 then
+    vim.fn.jobstop(vim.g.last_run_job_id)
+    local desc = vim.g.last_run_desc or "last job"
+    vim.notify("Stopped: " .. desc, vim.log.levels.INFO)
+    return
+  end
+
+  vim.notify("No running job to stop", vim.log.levels.WARN)
+end
+
+vim.keymap.set("n", "<leader>s", stop_last_run, { desc = "Stop current run" })

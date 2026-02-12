@@ -1,4 +1,5 @@
 -- Typst helpers and keymaps
+local M = {}
 local function is_typst_path(path)
   return path:match("%.typ$") or path:match("%.typst$")
 end
@@ -71,6 +72,82 @@ local function preview_typst()
   end
 
   vim.fn.jobstart({ "zathura", pdf }, { detach = true })
+  vim.notify("Typst preview: " .. pdf, vim.log.levels.INFO)
+end
+
+local function escape_pgrep_pattern(text)
+  return text:gsub("([\\.^$*+?()\\[%]{}|])", "\\%1")
+end
+
+local function zathura_running_for_pdf(pdf)
+  if vim.fn.executable("pgrep") ~= 1 then
+    return false
+  end
+  local pattern = "zathura%s+" .. escape_pgrep_pattern(pdf)
+  local result = vim.fn.systemlist({ "pgrep", "-f", pattern })
+  return (vim.v.shell_error == 0) and (#result > 0)
+end
+
+local function stop_zathura_for_pdf(pdf)
+  if vim.fn.executable("pkill") == 1 and vim.fn.executable("pgrep") == 1 then
+    local pattern = "zathura%s+" .. escape_pgrep_pattern(pdf)
+    vim.fn.system({ "pkill", "-f", pattern })
+    return
+  end
+  if vim.g.typst_preview_job_id then
+    vim.fn.jobstop(vim.g.typst_preview_job_id)
+    vim.g.typst_preview_job_id = nil
+  end
+end
+
+local function stop_typst_for_current_buffer()
+  local file = get_typst_file()
+  if not file then
+    return
+  end
+
+  if vim.g.typst_watch_job_id and vim.fn.jobwait({ vim.g.typst_watch_job_id }, 0)[1] == -1 then
+    stop_watch_typst()
+  end
+
+  local pdf = get_pdf_path(file)
+  if zathura_running_for_pdf(pdf) then
+    stop_zathura_for_pdf(pdf)
+  end
+end
+
+local function toggle_preview_typst()
+  if not ensure_typst() then
+    return
+  end
+
+  local file = get_typst_file()
+  if not file then
+    return
+  end
+
+  local pdf = get_pdf_path(file)
+  if zathura_running_for_pdf(pdf) then
+    stop_zathura_for_pdf(pdf)
+    vim.notify("Typst preview closed: " .. pdf, vim.log.levels.INFO)
+    return
+  end
+
+  local output = vim.fn.system({ "typst", "compile", file, pdf })
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Typst compile failed: " .. output, vim.log.levels.ERROR)
+    return
+  end
+
+  if vim.fn.executable("zathura") ~= 1 then
+    vim.notify("zathura not found in PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  local job_id = vim.fn.jobstart({ "zathura", pdf }, { detach = true })
+  if job_id > 0 then
+    vim.g.typst_preview_job_id = job_id
+  end
   vim.notify("Typst preview: " .. pdf, vim.log.levels.INFO)
 end
 
@@ -215,4 +292,8 @@ local function toggle_watch_typst()
   end
 end
 
-vim.keymap.set("n", "<leader>rt", toggle_watch_typst, { desc = "Typst watch toggle" })
+M.toggle_preview = toggle_preview_typst
+M.toggle_watch = toggle_watch_typst
+M.stop = stop_typst_for_current_buffer
+
+return M

@@ -8,12 +8,14 @@ local themes = {
   "kanagawa",
   "dracula",
   "everforest",
+  "gruvbox-material",
   "ayu-dark",
   "material",
   "github_dark",
   "nord",
   "rose-pine",
   "sonokai",
+  "nightfly",
 }
 
 local theme_state_file = vim.fn.stdpath("state") .. "/theme.txt"
