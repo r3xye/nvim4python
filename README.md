@@ -1,75 +1,129 @@
 # nvim4python
 
-Full-featured Neovim configuration for Python and C/C++ development, comparable to Visual Studio Code.
+A Neovim configuration for Python, C/C++, and Typst with a ready-to-use dashboard, LSP, code running, and debugging.
+
+## What's Included
+
+- `alpha-nvim` dashboard with quick actions and fast new-file creation.
+- `neo-tree` file explorer.
+- `telescope` for file/text/buffer/git search.
+- `nvim-lspconfig` + `mason` + `cmp` for LSP and completion.
+- LSP servers: `pyright`, `ruff`, `lua_ls`, `tinymist`, `clangd`.
+- `nvim-dap` + `nvim-dap-python` for debugging.
+- `bufferline` (VS-style) and `lualine` (full path + cwd + current theme).
+- `gitsigns`, `which-key`, `nvim-autopairs`, `Comment.nvim`, `indent-blankline`, `toggleterm`.
+- Theme collection with Telescope-based picker.
 
 ## Installation
 
-1. Ensure you have Neovim 0.9+ installed.
-2. Copy the files from this repository to `~/.config/nvim`:
-   ```bash
-   cp -r /path/to/nvim4python/* ~/.config/nvim/
-   ```
-3. Launch Neovim. Lazy.nvim will automatically install all plugins.
+1. Install Neovim `0.9+`.
+2. Put these files into `~/.config/nvim`.
+3. Start Neovim; `lazy.nvim` will install plugins automatically.
 
-## Main Plugins
+## Dashboard
 
-- **Dashboard**: Alpha-nvim with greeting "PUPAMUPA".
-- **Themes**: 16 dark themes (Catppuccin, TokyoNight, Gruvbox, OneDark, Nightfox, Kanagawa, Dracula, Everforest, Gruvbox Material, Ayu Dark, Material, GitHub Dark, Nord, Rose Pine, Sonokai, Nightfly) with cycling via <leader>tt.
-- **Swap Windows**: WinShift for moving windows.
-- **Which-key**: Shows keybindings.
-- **Surround**: Work with quotes and brackets.
-- **LSP**: Pyright (Python) and clangd (C/C++) with autocompletion and diagnostics.
-- **Treesitter**: Syntax highlighting.
-- **Telescope**: File, text, and buffer search.
-- **Neo-tree**: File tree explorer.
-- **Lualine**: Status bar.
-- **Bufferline**: Buffer management.
-- **Gitsigns**: Git integration.
-- **DAP**: Python and C/C++ debugging.
-- **Toggleterm**: Built-in terminal.
-- **Comment**: Code commenting.
-- **Autopairs**: Automatic brackets.
-- **Indent Blankline**: Indentation guides.
+On the start screen, `e` (`New file`) opens a selector:
 
-## Keybindings
+- `1` -> `Python (.py)`
+- `2` -> `C++ (.cpp)`
+- `3` -> `Typst (.typ)`
+- `q` / `Esc` -> cancel
 
-- `<leader>` - space
+## Keymaps
+
+`<leader>` = `Space`
+
+### Navigation and Search
+
 - `<leader>e` - toggle Neo-tree
-- `<leader>ff` - find files (Telescope)
+- `<leader>ff` - find files
 - `<leader>fg` - live grep
 - `<leader>fb` - buffers
-- `<leader>tt` - cycle themes
-- `<C-W>m` - WinShift (move window)
-- `gd` - go to definition
-- `gr` - go to references
-- `K` - hover documentation
-- `<leader>ca` - code action
-- `<leader>f` - format
-- `<F5>` - start debugging
-- `<leader>b` - toggle breakpoint
-- `<leader>rr` - run current file (Python module or C/C++ single file)
+- `<leader>fh` - help tags
+- `<leader>gs` - git status (Telescope)
+- `<leader>gc` - git commits
+- `<leader>gb` - git branches
 
-## Theme
+### Run and Utilities
 
-Default theme is Catppuccin Mocha. Change in `lua/plugins/init.lua` if needed.
+- `<leader>r` - run current file:
+  - `.py` -> `python <file>` in a new `kitty` window
+  - `.c/.cc/.cpp/.cxx` -> compile with `g++` and run
+  - `.typ/.typst` -> toggle `typst watch`
+- `<leader>s` - stop current run (or typst watch/preview)
+- `<leader>fR` - rename current file
+- `<leader>dR` - `ruff check --fix` + `ruff format`
 
-## Running Code
+### LSP
 
-- **Python**: Open a `.py` file and press `<leader>rr` (runs `python -m <module>`).
-- **C/C++ (single file)**: Open a `.c/.cc/.cpp/.cxx` file and press `<leader>rr`.
-  - Runs: `mkdir -p compile && g++ -std=c++20 -O0 -g <file> -o compile/<binary> && compile/<binary>`
-  - The file must be inside the current working directory.
+- `gd` - definition
+- `gr` - references
+- `K` - hover
+- `<leader>la` - code action
+- `<leader>lf` - format
 
-## Troubleshooting
+### DAP
 
-- If plugins fail to install, check internet and restart Neovim.
-- For Python, ensure `python` and `pip` are installed.
-- For LSP: Mason installs Pyright automatically; clangd is expected from your system PATH.
-- For C/C++ debugging: install `codelldb` (recommended) or `lldb-vscode` so `nvim-dap` can launch the debugger.
-- For C/C++ compiling: ensure `g++` is installed and in PATH.
+- `<leader>dc` - continue
+- `<leader>do` - step over
+- `<leader>di` - step into
+- `<leader>du` - step out
+- `<leader>db` - toggle breakpoint
+- `<leader>dB` - conditional breakpoint
+- `<leader>dr` - REPL
+- `<leader>dl` - run last
 
-## Arch Linux (recommended packages)
+### Bufferline
+
+- `<leader>bn` - next buffer
+- `<leader>bp` - previous buffer
+- `<leader>bd` - close buffer
+- `<leader>bo` - close other buffers
+
+### Themes
+
+- `<leader>t` - open theme picker (Telescope)
+
+## Important Dependencies
+
+Recommended binaries in PATH:
+
+- `python` (or `python3`)
+- `g++`
+- `clangd`
+- `ruff`
+- `typst`
+- `kitty` (required for `<leader>r` on `.py`/`.cpp`)
+
+For Typst preview:
+
+- `zathura`
+
+For C/C++ debugging:
+
+- `codelldb` (preferred) or `lldb-vscode`
+
+## Arch Linux
+
+Install dependencies via `pacman`:
 
 ```bash
-sudo pacman -S neovim clang codelldb
+sudo pacman -S --needed neovim python gcc clang ruff typst kitty zathura codelldb lldb
 ```
+
+## Statusline and Tabs
+
+- `lualine` shows:
+  - mode
+  - git branch/diff/diagnostics
+  - **full path of the current file**
+  - cwd
+  - active theme (`theme:<name>`)
+  - encoding/fileformat/filetype
+- `bufferline` is configured in a VS-like style with diagnostics and active-buffer indicator.
+- `indent-blankline` uses dotted indent guides `┊`.
+
+## Notes
+
+- If highlighting/plugins do not update after changes, restart Neovim.
+- To reload a single config file: `:source ~/.config/nvim/lua/config/<file>.lua`.

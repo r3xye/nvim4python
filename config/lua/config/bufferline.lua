@@ -1,12 +1,54 @@
 require("bufferline").setup({
   options = {
     mode = "buffers",
+    numbers = "none",
+    close_command = "bdelete! %d",
+    right_mouse_command = "bdelete! %d",
+    left_mouse_command = "buffer %d",
+    middle_mouse_command = nil,
+    indicator = {
+      style = "icon",
+      icon = "▎",
+    },
+    buffer_close_icon = "",
+    modified_icon = "●",
+    close_icon = "",
+    left_trunc_marker = "",
+    right_trunc_marker = "",
+    max_name_length = 24,
+    max_prefix_length = 18,
+    tab_size = 22,
+    diagnostics = "nvim_lsp",
+    diagnostics_indicator = function(_, _, diag)
+      local parts = {}
+      if diag.error then
+        table.insert(parts, " " .. diag.error)
+      end
+      if diag.warning then
+        table.insert(parts, " " .. diag.warning)
+      end
+      return table.concat(parts, " ")
+    end,
+    show_buffer_icons = true,
+    show_buffer_close_icons = false,
+    show_close_icon = false,
+    show_tab_indicators = true,
+    persist_buffer_sort = true,
+    separator_style = { "┆", "┆" },
+    enforce_regular_tabs = true,
+    always_show_bufferline = true,
+    hover = {
+      enabled = true,
+      delay = 120,
+      reveal = { "close" },
+    },
     offsets = {
       {
         filetype = "neo-tree",
         text = "File Explorer",
         highlight = "Directory",
-        separator = true,
+        text_align = "left",
+        separator = false,
       },
     },
   },

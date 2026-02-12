@@ -20,5 +20,3 @@ local function run_pytest()
     vim.cmd("copen")
   end
 end
-
-vim.keymap.set("n", "<leader>tp", run_pytest, { desc = "Run pytest" })

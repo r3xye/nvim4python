@@ -193,3 +193,42 @@ local function stop_last_run()
 end
 
 vim.keymap.set("n", "<leader>s", stop_last_run, { desc = "Stop current run" })
+
+local function run_ruff_on_current_file()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" then
+    vim.notify("No file to lint", vim.log.levels.WARN)
+    return
+  end
+
+  if not file:match("%.py$") then
+    vim.notify("Ruff works with Python files", vim.log.levels.WARN)
+    return
+  end
+
+  if vim.fn.executable("ruff") ~= 1 then
+    vim.notify("ruff not found in PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  if vim.bo.modified then
+    vim.cmd("write")
+  end
+
+  local check_output = vim.fn.system({ "ruff", "check", "--fix", file })
+  if vim.v.shell_error ~= 0 then
+    vim.notify("ruff check failed:\n" .. check_output, vim.log.levels.ERROR)
+    return
+  end
+
+  local format_output = vim.fn.system({ "ruff", "format", file })
+  if vim.v.shell_error ~= 0 then
+    vim.notify("ruff format failed:\n" .. format_output, vim.log.levels.ERROR)
+    return
+  end
+
+  vim.cmd("checktime")
+  vim.notify("ruff: fixed and formatted", vim.log.levels.INFO)
+end
+
+vim.keymap.set("n", "<leader>dR", run_ruff_on_current_file, { desc = "Ruff fix + format" })
