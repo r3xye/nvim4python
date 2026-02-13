@@ -1,7 +1,14 @@
 -- Typst helpers and keymaps
 local M = {}
+local stop_watch_typst
 local function is_typst_path(path)
   return path:match("%.typ$") or path:match("%.typst$")
+end
+
+local function remember_typst_file(file)
+  if is_typst_path(file) then
+    vim.g.typst_last_file = file
+  end
 end
 
 local function get_typst_file()
@@ -14,6 +21,7 @@ local function get_typst_file()
     vim.notify("Not a Typst file", vim.log.levels.WARN)
     return nil
   end
+  remember_typst_file(file)
   return file
 end
 
@@ -92,16 +100,22 @@ local function stop_zathura_for_pdf(pdf)
   if vim.fn.executable("pkill") == 1 and vim.fn.executable("pgrep") == 1 then
     local pattern = "zathura%s+" .. escape_pgrep_pattern(pdf)
     vim.fn.system({ "pkill", "-f", pattern })
-    return
   end
   if vim.g.typst_preview_job_id then
     vim.fn.jobstop(vim.g.typst_preview_job_id)
     vim.g.typst_preview_job_id = nil
   end
+  if vim.g.typst_zathura_job_id then
+    vim.fn.jobstop(vim.g.typst_zathura_job_id)
+    vim.g.typst_zathura_job_id = nil
+  end
 end
 
 local function stop_typst_for_current_buffer()
   local file = get_typst_file()
+  if not file and type(vim.g.typst_last_file) == "string" and vim.g.typst_last_file ~= "" then
+    file = vim.g.typst_last_file
+  end
   if not file then
     return
   end
@@ -111,9 +125,7 @@ local function stop_typst_for_current_buffer()
   end
 
   local pdf = get_pdf_path(file)
-  if zathura_running_for_pdf(pdf) then
-    stop_zathura_for_pdf(pdf)
-  end
+  stop_zathura_for_pdf(pdf)
 end
 
 local function toggle_preview_typst()
@@ -125,6 +137,7 @@ local function toggle_preview_typst()
   if not file then
     return
   end
+  remember_typst_file(file)
 
   local pdf = get_pdf_path(file)
   if zathura_running_for_pdf(pdf) then
@@ -193,7 +206,7 @@ local function watch_typst()
   vim.notify("Typst watch started (real-time preview)", vim.log.levels.INFO)
 end
 
-local function stop_watch_typst()
+stop_watch_typst = function()
   if not vim.g.typst_watch_job_id then
     vim.notify("Typst watch not running", vim.log.levels.INFO)
     return

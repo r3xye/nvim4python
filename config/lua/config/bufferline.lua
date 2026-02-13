@@ -55,6 +55,7 @@ require("bufferline").setup({
 })
 
 -- Keymaps for buffers
+vim.keymap.set("n", "<leader>bN", "<cmd>enew<cr>", { desc = "New buffer" })
 vim.keymap.set("n", "<leader>bn", "<cmd>BufferLineCycleNext<cr>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bp", "<cmd>BufferLineCyclePrev<cr>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bd", "<cmd>bdelete<cr>", { desc = "Delete buffer" })

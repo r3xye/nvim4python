@@ -51,8 +51,13 @@ On the start screen, `e` (`New file`) opens a selector:
   - `.c/.cc/.cpp/.cxx` -> compile with `g++` and run
   - `.typ/.typst` -> toggle `typst watch`
 - `<leader>s` - stop current run (or typst watch/preview)
-- `<leader>fR` - rename current file
+- `<leader>fr` - rename current file
 - `<leader>dR` - `ruff check --fix` + `ruff format`
+
+### Editing
+
+- in visual mode: `/` toggles comment for selection
+- in visual mode: `>` / `<` keeps selection after indenting
 
 ### LSP
 
@@ -75,10 +80,12 @@ On the start screen, `e` (`New file`) opens a selector:
 
 ### Bufferline
 
+- `<leader>bN` - new buffer
 - `<leader>bn` - next buffer
 - `<leader>bp` - previous buffer
 - `<leader>bd` - close buffer
 - `<leader>bo` - close other buffers
+- `<leader>br` - rename current buffer name
 
 ### Themes
 

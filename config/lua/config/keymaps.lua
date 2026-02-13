@@ -16,19 +16,39 @@ local function rename_current_file()
     end
 
     local new_path = dir .. "/" .. new_name
-    if vim.fn.filereadable(new_path) == 1 then
+    if vim.fn.filereadable(new_path) == 1 or vim.fn.isdirectory(new_path) == 1 then
       vim.notify("Target exists: " .. new_path, vim.log.levels.ERROR)
       return
     end
 
-    local ok = vim.fn.rename(old_path, new_path)
-    if ok ~= 0 then
-      vim.notify("Rename failed", vim.log.levels.ERROR)
+    if vim.bo.modified then
+      vim.cmd("write")
+    end
+
+    if vim.fn.rename(old_path, new_path) ~= 0 then
+      vim.notify("Rename failed: " .. (vim.v.errmsg or "unknown error"), vim.log.levels.ERROR)
       return
     end
 
-    vim.cmd("edit " .. vim.fn.fnameescape(new_path))
-    vim.cmd("bdelete " .. vim.fn.bufnr(old_path))
+    vim.api.nvim_buf_set_name(0, new_path)
+    vim.cmd("silent! write")
+    vim.notify("Renamed to: " .. new_name, vim.log.levels.INFO)
+  end)
+end
+
+local function rename_current_buffer()
+  local old_name = vim.api.nvim_buf_get_name(0)
+  if old_name == "" then
+    old_name = "[No Name]"
+  end
+
+  vim.ui.input({ prompt = "Buffer name: ", default = old_name }, function(new_name)
+    if not new_name or new_name == "" or new_name == old_name then
+      return
+    end
+
+    vim.cmd("file " .. vim.fn.fnameescape(new_name))
+    vim.notify("Buffer renamed to: " .. new_name, vim.log.levels.INFO)
   end)
 end
 
@@ -171,7 +191,8 @@ local function run_current_file()
   vim.notify("No runner for this file type", vim.log.levels.WARN)
 end
 
-vim.keymap.set("n", "<leader>fR", rename_current_file, { desc = "Rename file" })
+vim.keymap.set("n", "<leader>fr", rename_current_file, { desc = "Rename file" })
+vim.keymap.set("n", "<leader>br", rename_current_buffer, { desc = "Rename buffer" })
 vim.keymap.set("n", "<leader>r", run_current_file, { desc = "Run current file" })
 
 local function stop_last_run()
@@ -232,3 +253,10 @@ local function run_ruff_on_current_file()
 end
 
 vim.keymap.set("n", "<leader>dR", run_ruff_on_current_file, { desc = "Ruff fix + format" })
+
+-- Comment shortcut in visual mode
+vim.keymap.set("x", "/", "gc", { remap = true, desc = "Toggle comment selection" })
+
+-- Keep selection after indenting in visual mode
+vim.keymap.set("x", ">", ">gv", { desc = "Indent right and keep selection" })
+vim.keymap.set("x", "<", "<gv", { desc = "Indent left and keep selection" })
