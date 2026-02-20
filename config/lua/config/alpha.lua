@@ -9,6 +9,11 @@ vim.api.nvim_create_user_command("DashboardNewFile", function()
   }
 
   local function create_file(ext)
+    local function make_unique_name(extension)
+      local stamp = os.date("%Y%m%d-%H%M%S")
+      return string.format("untitled-%s.%s", stamp, extension)
+    end
+
     local filetypes = {
       py = "python",
       cpp = "cpp",
@@ -40,14 +45,20 @@ vim.api.nvim_create_user_command("DashboardNewFile", function()
     }
 
     vim.cmd("enew")
-    vim.cmd("file untitled." .. ext)
+    local new_name = make_unique_name(ext)
+    local ok, err = pcall(vim.cmd, "file " .. vim.fn.fnameescape(new_name))
+    if not ok then
+      vim.notify(
+        "Could not assign file name " .. new_name .. ": " .. tostring(err),
+        vim.log.levels.WARN
+      )
+    end
     vim.bo.filetype = filetypes[ext] or ""
     local content = templates[ext]
     if content then
       vim.api.nvim_buf_set_lines(0, 0, -1, false, content)
       vim.api.nvim_win_set_cursor(0, { #content, 0 })
     end
-    vim.cmd("startinsert")
   end
 
   local lines = { "Create new file" }
