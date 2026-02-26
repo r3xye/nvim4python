@@ -1,5 +1,6 @@
 -- Custom keymaps
 local typst = require("config.typst")
+local python = require("config.python")
 local function rename_current_file()
   local old_path = vim.api.nvim_buf_get_name(0)
   if old_path == "" then
@@ -59,20 +60,14 @@ local function create_project_venv()
     return
   end
 
-  local python = nil
-  if vim.fn.executable("python") == 1 then
-    python = "python"
-  elseif vim.fn.executable("python3") == 1 then
-    python = "python3"
-  end
-
-  if not python then
+  local system_python = python.get_system_python()
+  if not system_python then
     vim.notify("Python not found in PATH", vim.log.levels.ERROR)
     return
   end
 
   vim.notify("Creating venv in " .. venv_path .. "...", vim.log.levels.INFO)
-  local output = vim.fn.system({ python, "-m", "venv", venv_path })
+  local output = vim.fn.system({ system_python, "-m", "venv", venv_path })
   if vim.v.shell_error ~= 0 then
     vim.notify("Venv creation failed: " .. output, vim.log.levels.ERROR)
     return
@@ -112,19 +107,14 @@ local function run_python_module_in_terminal()
     return
   end
 
-  local python = nil
-  if vim.fn.executable("python") == 1 then
-    python = "python"
-  elseif vim.fn.executable("python3") == 1 then
-    python = "python3"
-  end
-  if not python then
+  local python_exec = python.get_python({ root = python.get_project_root(0) })
+  if not python_exec then
     vim.notify("Python not found in PATH", vim.log.levels.ERROR)
     return
   end
 
   local rel_escaped = vim.fn.shellescape(rel)
-  local cmd = python .. " " .. rel_escaped
+  local cmd = vim.fn.shellescape(python_exec) .. " " .. rel_escaped
   run_in_terminal(cmd, cmd)
 end
 

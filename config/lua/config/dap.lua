@@ -1,7 +1,11 @@
 local dap = require("dap")
 local dap_python = require("dap-python")
+local python = require("config.python")
 
-dap_python.setup("python")
+dap_python.setup(python.get_system_python() or "python")
+dap_python.resolve_python = function()
+  return python.get_python({ root = python.get_project_root(0) }) or "python"
+end
 
 local function resolve_cpp_adapter()
   local codelldb = vim.fn.exepath("codelldb")

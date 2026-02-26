@@ -4,10 +4,28 @@ require("mason-lspconfig").setup({
 })
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
+local python = require("config.python")
 
 -- Python LSP
 vim.lsp.config("pyright", {
   capabilities = capabilities,
+  before_init = function(_, config)
+    local root = config.root_dir or python.get_project_root(0)
+    local python_path = python.get_python({ root = root })
+    local venv_dir = python.get_venv_dir({ root = root })
+
+    config.settings = config.settings or {}
+    config.settings.python = config.settings.python or {}
+
+    if python_path then
+      config.settings.python.pythonPath = python_path
+    end
+
+    if venv_dir then
+      config.settings.python.venvPath = vim.fs.dirname(venv_dir)
+      config.settings.python.venv = vim.fs.basename(venv_dir)
+    end
+  end,
   settings = {
     python = {
       analysis = {
