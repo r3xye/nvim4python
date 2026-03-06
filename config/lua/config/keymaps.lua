@@ -76,6 +76,107 @@ local function create_project_venv()
   vim.notify("Venv created: " .. venv_path, vim.log.levels.INFO)
 end
 
+local function get_live_run_terminal()
+  local bufnr = vim.g.last_run_term_buf
+  if not bufnr or bufnr == 0 or not vim.api.nvim_buf_is_valid(bufnr) then
+    return nil, nil
+  end
+  if vim.bo[bufnr].buftype ~= "terminal" then
+    return nil, nil
+  end
+
+  local ok, job_id = pcall(vim.api.nvim_buf_get_var, bufnr, "terminal_job_id")
+  if not ok or not job_id or vim.fn.jobwait({ job_id }, 0)[1] ~= -1 then
+    return nil, nil
+  end
+
+  return bufnr, job_id
+end
+
+local function ensure_run_terminal()
+  local bufnr, job_id = get_live_run_terminal()
+  if bufnr and job_id then
+    local wins = vim.fn.win_findbuf(bufnr)
+    if #wins > 0 then
+      vim.api.nvim_set_current_win(wins[1])
+    else
+      vim.cmd("botright split")
+      vim.cmd("resize 14")
+      vim.api.nvim_win_set_buf(0, bufnr)
+    end
+    vim.cmd("startinsert")
+    return job_id
+  end
+
+  vim.cmd("botright split")
+  vim.cmd("resize 14")
+  vim.cmd("terminal")
+  local term_buf = vim.api.nvim_get_current_buf()
+  local term_job = vim.b.terminal_job_id
+  vim.g.last_run_term_buf = term_buf
+  vim.cmd("startinsert")
+  return term_job
+end
+
+local function run_in_buffer_terminal(cmd, desc)
+  local job_id = ensure_run_terminal()
+  if not job_id then
+    vim.notify("Failed to open terminal buffer", vim.log.levels.ERROR)
+    return
+  end
+
+  vim.fn.chansend(job_id, cmd .. "\n")
+  vim.g.last_run_desc = desc or cmd
+end
+
+local function run_current_file_in_buffer()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" then
+    vim.notify("No file to run", vim.log.levels.WARN)
+    return
+  end
+
+  local rel = vim.fn.fnamemodify(file, ":.")
+  if rel:sub(1, 2) == ".." then
+    vim.notify("File is outside current working directory", vim.log.levels.ERROR)
+    return
+  end
+
+  if file:match("%.py$") then
+    local python_exec = python.get_python({ root = python.get_project_root(0) })
+    if not python_exec then
+      vim.notify("Python not found in PATH", vim.log.levels.ERROR)
+      return
+    end
+
+    local cmd = vim.fn.shellescape(python_exec) .. " " .. vim.fn.shellescape(rel)
+    run_in_buffer_terminal(cmd, cmd)
+    return
+  end
+
+  if file:match("%.c$") or file:match("%.cc$") or file:match("%.cpp$") or file:match("%.cxx$") then
+    if vim.fn.executable("g++") ~= 1 then
+      vim.notify("g++ not found in PATH", vim.log.levels.ERROR)
+      return
+    end
+
+    local out_dir = "compile"
+    local out = vim.fn.fnamemodify(file, ":t:r")
+    local out_path = out_dir .. "/" .. out
+    local cmd = string.format(
+      "mkdir -p %s && g++ -std=c++20 -O0 -g %s -o %s && %s",
+      vim.fn.shellescape(out_dir),
+      vim.fn.shellescape(rel),
+      vim.fn.shellescape(out_path),
+      vim.fn.shellescape(out_path)
+    )
+    run_in_buffer_terminal(cmd, cmd)
+    return
+  end
+
+  vim.notify("Buffer runner supports only Python and C/C++", vim.log.levels.WARN)
+end
+
 local function run_in_terminal(cmd, desc)
   if vim.fn.executable("kitty") ~= 1 then
     vim.notify("kitty not found in PATH", vim.log.levels.ERROR)
@@ -84,10 +185,13 @@ local function run_in_terminal(cmd, desc)
 
   local cwd = vim.fn.getcwd()
   local job_id = vim.fn.jobstart({ "kitty", "--working-directory", cwd, "--hold", "sh", "-lc", cmd }, { detach = true })
-  if job_id > 0 then
-    vim.g.last_run_job_id = job_id
-    vim.g.last_run_desc = desc or cmd
+  if job_id <= 0 then
+    vim.notify("Failed to run command in kitty", vim.log.levels.ERROR)
+    return
   end
+
+  vim.g.last_run_job_id = job_id
+  vim.g.last_run_desc = desc or cmd
 end
 
 local function run_python_module_in_terminal()
@@ -184,12 +288,31 @@ end
 vim.keymap.set("n", "<leader>fr", rename_current_file, { desc = "Rename file" })
 vim.keymap.set("n", "<leader>br", rename_current_buffer, { desc = "Rename buffer" })
 vim.keymap.set("n", "<leader>r", run_current_file, { desc = "Run current file" })
+vim.keymap.set("n", "<leader>R", run_current_file_in_buffer, { desc = "Run current file in buffer" })
 
 local function stop_last_run()
   local file = vim.api.nvim_buf_get_name(0)
   if file ~= "" and (file:match("%.typ$") or file:match("%.typst$")) then
     typst.stop()
     vim.notify("Typst stopped", vim.log.levels.INFO)
+    return
+  end
+
+  local term_buf, term_job = get_live_run_terminal()
+  if term_buf and term_job then
+    vim.fn.jobstop(term_job)
+    local wins = vim.fn.win_findbuf(term_buf)
+    for _, win in ipairs(wins) do
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end
+    if vim.api.nvim_buf_is_valid(term_buf) then
+      vim.api.nvim_buf_delete(term_buf, { force = true })
+    end
+    vim.g.last_run_term_buf = nil
+    local desc = vim.g.last_run_desc or "last run"
+    vim.notify("Stopped: " .. desc, vim.log.levels.INFO)
     return
   end
 

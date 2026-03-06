@@ -50,6 +50,7 @@ On the start screen, `e` (`New file`) opens a selector:
   - `.py` -> `python <file>` in a new `kitty` window
   - `.c/.cc/.cpp/.cxx` -> compile with `g++` and run
   - `.typ/.typst` -> toggle `typst watch`
+- `<leader>R` - run `.py` / `.c/.cc/.cpp/.cxx` in a Neovim terminal buffer
 - `<leader>s` - stop current run (or typst watch/preview)
 - `<leader>fr` - rename current file
 - `<leader>dR` - `ruff check --fix` + `ruff format`
