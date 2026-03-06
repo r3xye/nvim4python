@@ -22,6 +22,7 @@ vim.opt.sidescrolloff = 8
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 300
 vim.opt.timeoutlen = 300
+vim.opt.laststatus = 3
 
 -- Load plugins via lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -55,12 +56,10 @@ require("config.dap")
 require("config.comment")
 require("config.autopairs")
 require("config.indent")
-require("config.alpha")
 require("config.winshift")
 require("config.whichkey")
 require("config.surround")
 require("config.themes")
 require("config.terminal")
 require("config.keymaps")
-require("config.tests")
 require("config.typst")

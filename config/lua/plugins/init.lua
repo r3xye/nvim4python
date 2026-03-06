@@ -24,10 +24,14 @@ return {
   "sainnhe/sonokai",
   "bluz71/vim-nightfly-colors",
 
-  -- Dashboard
+  -- Dashboard / UI goodies
   {
-    "goolord/alpha-nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = function()
+      return require("config.snacks")
+    end,
   },
 
   -- Treesitter for syntax highlighting
@@ -89,13 +93,6 @@ return {
   -- Debugger
   "mfussenegger/nvim-dap",
   "mfussenegger/nvim-dap-python",
-
-  -- Terminal
-  {
-    "akinsho/toggleterm.nvim",
-    version = "*",
-    config = true,
-  },
 
   -- Comments
   "numToStr/Comment.nvim",

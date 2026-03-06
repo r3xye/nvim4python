@@ -6,13 +6,17 @@ require("neo-tree").setup({
   sort_case_insensitive = true,
   filesystem = {
     filtered_items = {
-      visible = false,
+      visible = true,
+      hide_hidden = false,
       hide_dotfiles = false,
       hide_gitignored = false,
     },
   },
   window = {
-    mappings = {},
+    mappings = {
+      ["-"] = "navigate_up",
+      ["<bs>"] = "navigate_up",
+    },
   },
 })
 

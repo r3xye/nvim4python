@@ -10,8 +10,13 @@ local function full_filepath()
   return path
 end
 
+local function active_cwd()
+  return "cwd:" .. vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
+end
+
 require("lualine").setup({
   options = {
+    globalstatus = true,
     theme = "catppuccin",
     component_separators = "|",
     section_separators = "",
@@ -21,7 +26,7 @@ require("lualine").setup({
     lualine_b = { "branch", "diff", "diagnostics" },
     lualine_c = { { full_filepath } },
     lualine_x = {
-      { "cwd", icon = "", fmt = function(path) return vim.fn.fnamemodify(path, ":t") end },
+      { active_cwd, icon = "" },
       { current_theme },
       "encoding",
       "fileformat",

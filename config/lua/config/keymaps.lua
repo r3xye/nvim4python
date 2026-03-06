@@ -53,29 +53,6 @@ local function rename_current_buffer()
   end)
 end
 
-local function create_project_venv()
-  local venv_path = ".venv"
-  if vim.fn.isdirectory(venv_path) == 1 then
-    vim.notify("Venv already exists: " .. venv_path, vim.log.levels.INFO)
-    return
-  end
-
-  local system_python = python.get_system_python()
-  if not system_python then
-    vim.notify("Python not found in PATH", vim.log.levels.ERROR)
-    return
-  end
-
-  vim.notify("Creating venv in " .. venv_path .. "...", vim.log.levels.INFO)
-  local output = vim.fn.system({ system_python, "-m", "venv", venv_path })
-  if vim.v.shell_error ~= 0 then
-    vim.notify("Venv creation failed: " .. output, vim.log.levels.ERROR)
-    return
-  end
-
-  vim.notify("Venv created: " .. venv_path, vim.log.levels.INFO)
-end
-
 local function get_live_run_terminal()
   local bufnr = vim.g.last_run_term_buf
   if not bufnr or bufnr == 0 or not vim.api.nvim_buf_is_valid(bufnr) then
@@ -285,8 +262,18 @@ local function run_current_file()
   vim.notify("No runner for this file type", vim.log.levels.WARN)
 end
 
+local function open_dashboard()
+  local ok, snacks = pcall(require, "snacks")
+  if not ok or not snacks.dashboard then
+    vim.notify("Dashboard is unavailable", vim.log.levels.WARN)
+    return
+  end
+  snacks.dashboard.open()
+end
+
 vim.keymap.set("n", "<leader>fr", rename_current_file, { desc = "Rename file" })
 vim.keymap.set("n", "<leader>br", rename_current_buffer, { desc = "Rename buffer" })
+vim.keymap.set("n", "<leader>q", open_dashboard, { desc = "Open dashboard" })
 vim.keymap.set("n", "<leader>r", run_current_file, { desc = "Run current file" })
 vim.keymap.set("n", "<leader>R", run_current_file_in_buffer, { desc = "Run current file in buffer" })
 
