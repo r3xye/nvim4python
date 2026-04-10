@@ -1,29 +1,150 @@
+local file_presets = {
+  py = {
+    ext = "py",
+    ft = "python",
+    label = "Python (.py)",
+    cursor = { 2, 4 },
+    lines = {
+      'def main() -> None:',
+      "    ",
+      "    pass",
+      "",
+      'if __name__ == "__main__":',
+      "    main()",
+    },
+  },
+  cpp = {
+    ext = "cpp",
+    ft = "cpp",
+    label = "C++ (.cpp)",
+    cursor = { 4, 4 },
+    lines = {
+      "#include <iostream>",
+      "",
+      "int main() {",
+      "",
+      "    return 0;",
+      "}",
+    },
+  },
+  typst = {
+    ext = "typst",
+    ft = "typst",
+    label = "Typst (.typst)",
+    cursor = { 6, 0 },
+    lines = {
+      "#set page(margin: 1cm)",
+      '#set text(font: "Libertinus Serif", size: 12pt)',
+      "",
+      "= Title",
+      "",
+      "Your text here.",
+    },
+  },
+}
+
+local extension_aliases = {
+  typ = "typst",
+}
+
+local function canonical_extension(ext)
+  if not ext or ext == "" then
+    return nil
+  end
+  ext = ext:gsub("^%.*", ""):lower()
+  return extension_aliases[ext] or ext
+end
+
+local function resolve_preset(ext)
+  local key = canonical_extension(ext)
+  return key and file_presets[key] or nil
+end
+
+local function make_unique_name(extension)
+  local stamp = os.date("%Y%m%d-%H%M%S")
+  return ("untitled-%s.%s"):format(stamp, extension)
+end
+
+local function populate_new_buffer(name, preset)
+  vim.cmd("enew")
+  vim.cmd("file " .. vim.fn.fnameescape(name))
+
+  if preset then
+    vim.bo.filetype = preset.ft
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, preset.lines)
+    vim.api.nvim_win_set_cursor(0, preset.cursor)
+    return
+  end
+
+  local detected = vim.filetype.match({ filename = name })
+  if detected then
+    vim.bo.filetype = detected
+  end
+end
+
+local function create_new_file(name)
+  local trimmed = vim.trim(name or "")
+  if trimmed == "" then
+    return false
+  end
+
+  local filename = trimmed
+  local preset
+
+  if trimmed:match("^%.[%w_-]+$") then
+    preset = resolve_preset(trimmed)
+    local ext = canonical_extension(trimmed)
+    filename = make_unique_name(ext)
+  else
+    preset = resolve_preset(vim.fn.fnamemodify(trimmed, ":e"))
+  end
+
+  populate_new_buffer(filename, preset)
+  return true
+end
+
+local function select_new_file_preset()
+  local choices = {
+    file_presets.py,
+    file_presets.cpp,
+    file_presets.typst,
+  }
+
+  vim.ui.select(choices, {
+    prompt = "Create new file:",
+    format_item = function(item)
+      return item.label
+    end,
+  }, function(item)
+    if not item then
+      return
+    end
+
+    populate_new_buffer(make_unique_name(item.ext), item)
+  end)
+end
+
 local function ensure_dashboard_new_file_command()
   if vim.fn.exists(":DashboardNewFile") == 2 then
     return
   end
 
   vim.api.nvim_create_user_command("DashboardNewFile", function()
-    local choices = {
-      { label = "Python (.py)", ext = "py", ft = "python" },
-      { label = "C++ (.cpp)", ext = "cpp", ft = "cpp" },
-      { label = "Typst (.typ)", ext = "typ", ft = "typst" },
-    }
-
-    vim.ui.select(choices, {
-      prompt = "Create new file:",
-      format_item = function(item)
-        return item.label
-      end,
-    }, function(item)
-      if not item then
+    vim.ui.input({
+      prompt = "File name or extension (.py, .cpp, .typst): ",
+    }, function(input)
+      if input == nil then
         return
       end
-      local stamp = os.date("%Y%m%d-%H%M%S")
-      local name = ("untitled-%s.%s"):format(stamp, item.ext)
-      vim.cmd("enew")
-      vim.cmd("file " .. vim.fn.fnameescape(name))
-      vim.bo.filetype = item.ft
+
+      if vim.trim(input) == "" then
+        select_new_file_preset()
+        return
+      end
+
+      if not create_new_file(input) then
+        vim.notify("Could not create file from input: " .. input, vim.log.levels.WARN)
+      end
     end)
   end, {})
 end

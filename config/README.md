@@ -26,7 +26,8 @@ On the start screen:
 
 - left pane: functional actions (`new file`, `find`, `recent`, `settings`, etc.)
 - right pane: live widgets (`cmatrix`, `cava` visualizer, commit stats / repo shortcuts)
-- `e` (`New file`) opens a file-type selector (`Python`, `C++`, `Typst`)
+- `e` (`New file`) asks for a file name or extension like `.py`, `.cpp`, `.typst`
+- empty input falls back to the file-type selector (`Python`, `C++`, `Typst`)
 
 ## Keymaps
 
