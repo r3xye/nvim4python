@@ -234,7 +234,7 @@ local function schedule_typst_autosave(bufnr)
   if not vim.api.nvim_buf_is_valid(bufnr) then
     return
   end
-  if vim.bo[bufnr].buftype ~= "" or not vim.bo[bufnr].modifiable then
+  if vim.bo[bufnr].buftype ~= "" or not vim.bo[bufnr].modifiable or vim.bo[bufnr].readonly then
     return
   end
   if not is_typst_path(vim.api.nvim_buf_get_name(bufnr)) then
@@ -256,7 +256,7 @@ local function schedule_typst_autosave(bufnr)
       if not vim.api.nvim_buf_is_valid(bufnr) then
         return
       end
-      if vim.bo[bufnr].modified then
+      if vim.bo[bufnr].modified and vim.bo[bufnr].modifiable and not vim.bo[bufnr].readonly then
         vim.api.nvim_buf_call(bufnr, function()
           vim.cmd("silent write")
         end)

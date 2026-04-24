@@ -90,6 +90,15 @@ return {
   -- Git integration
   "lewis6991/gitsigns.nvim",
 
+  -- Color picker / highlighting
+  {
+    "uga-rosa/ccc.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    config = function()
+      require("config.colors").setup()
+    end,
+  },
+
   -- Debugger
   "mfussenegger/nvim-dap",
   "mfussenegger/nvim-dap-python",

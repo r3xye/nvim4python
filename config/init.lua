@@ -1,4 +1,11 @@
 -- Main Neovim configuration file
+local config_root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h")
+package.path = table.concat({
+  config_root .. "/lua/?.lua",
+  config_root .. "/lua/?/init.lua",
+  package.path,
+}, ";")
+
 vim.g.mapleader = " "
 
 -- Settings
@@ -10,6 +17,7 @@ vim.opt.expandtab = true
 vim.opt.smartindent = true
 vim.opt.termguicolors = true
 vim.opt.clipboard = "unnamedplus"
+vim.opt.mouse = "a"
 vim.opt.cursorline = true
 vim.opt.guicursor = "n-v-c:block,i-ci-ve:block,r-cr-o:block"
 vim.opt.list = false
@@ -60,6 +68,7 @@ require("config.indent")
 require("config.winshift")
 require("config.whichkey")
 require("config.surround")
+require("config.colors")
 require("config.themes")
 require("config.terminal")
 require("config.keymaps")

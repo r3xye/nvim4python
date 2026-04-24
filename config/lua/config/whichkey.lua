@@ -47,6 +47,7 @@ require("which-key").setup({
 local wk = require("which-key")
 wk.register({
   ["<leader>b"] = { name = "Buffers" },
+  ["<leader>c"] = { name = "Colors" },
   ["<leader>d"] = { name = "Debug/Ruff" },
   ["<leader>e"] = { name = "Explorer" },
   ["<leader>f"] = { name = "Files/Find" },
