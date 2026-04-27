@@ -104,7 +104,12 @@ return {
   "mfussenegger/nvim-dap-python",
 
   -- Comments
-  "numToStr/Comment.nvim",
+  {
+    "numToStr/Comment.nvim",
+    config = function()
+      require("config.comment").setup()
+    end,
+  },
 
   -- Auto pairs
   "windwp/nvim-autopairs",

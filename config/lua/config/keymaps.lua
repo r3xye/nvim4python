@@ -355,7 +355,9 @@ end
 vim.keymap.set("n", "<leader>dR", run_ruff_on_current_file, { desc = "Ruff fix + format" })
 
 -- Comment shortcut in visual mode
-vim.keymap.set("x", "/", "gc", { remap = true, desc = "Toggle comment selection" })
+vim.keymap.set("x", "/", function()
+  require("config.comment").toggle_visual()
+end, { desc = "Toggle comment selection" })
 
 -- Keep selection after indenting in visual mode
 vim.keymap.set("x", ">", ">gv", { desc = "Indent right and keep selection" })
