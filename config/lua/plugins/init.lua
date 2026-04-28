@@ -23,6 +23,12 @@ return {
   "rose-pine/neovim",
   "sainnhe/sonokai",
   "bluz71/vim-nightfly-colors",
+  "nyoom-engineering/oxocarbon.nvim",
+  "Mofiqul/vscode.nvim",
+  "savq/melange-nvim",
+  "sainnhe/edge",
+  "maxmx03/solarized.nvim",
+  "NLKNguyen/papercolor-theme",
 
   -- Dashboard / UI goodies
   {

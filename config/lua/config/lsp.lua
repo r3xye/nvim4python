@@ -1,10 +1,18 @@
 require("mason").setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "pyright", "lua_ls", "ruff", "tinymist" },
+  ensure_installed = { "pyright", "lua_ls", "ruff", "tinymist", "clangd" },
 })
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 local python = require("config.python")
+
+vim.diagnostic.config({
+  virtual_text = true,
+  signs = true,
+  underline = true,
+  update_in_insert = false,
+  severity_sort = true,
+})
 
 -- Python LSP
 vim.lsp.config("pyright", {

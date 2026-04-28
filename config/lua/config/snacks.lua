@@ -149,19 +149,131 @@ local function ensure_dashboard_new_file_command()
   end, {})
 end
 
+local function dashboard_palette()
+  local theme = vim.g.colors_name or ""
+  local palettes = {
+    ["gruvbox-material"] = {
+      header = "#d8a657",
+      desc = "#ddc7a1",
+      icon = "#e78a4e",
+      key = "#ea6962",
+      special = "#7daea3",
+      footer = "#a9b665",
+    },
+    gruvbox = {
+      header = "#fabd2f",
+      desc = "#ebdbb2",
+      icon = "#fe8019",
+      key = "#fb4934",
+      special = "#83a598",
+      footer = "#8ec07c",
+    },
+    ["catppuccin-latte"] = {
+      header = "#dc8a78",
+      desc = "#4c4f69",
+      icon = "#fe640b",
+      key = "#d20f39",
+      special = "#179299",
+      footer = "#40a02b",
+    },
+    dayfox = {
+      header = "#b26f16",
+      desc = "#3d2b5a",
+      icon = "#c46339",
+      key = "#d03032",
+      special = "#287980",
+      footer = "#6f894e",
+    },
+    dawnfox = {
+      header = "#b26f16",
+      desc = "#4f4a45",
+      icon = "#c46339",
+      key = "#b3434e",
+      special = "#2c6f77",
+      footer = "#577f63",
+    },
+    ["ayu-light"] = {
+      header = "#c17d11",
+      desc = "#5c6773",
+      icon = "#ff9940",
+      key = "#f07171",
+      special = "#399ee6",
+      footer = "#86b300",
+    },
+    github_light = {
+      header = "#9a6700",
+      desc = "#24292f",
+      icon = "#bc4c00",
+      key = "#cf222e",
+      special = "#0969da",
+      footer = "#1a7f37",
+    },
+    ["rose-pine-dawn"] = {
+      header = "#b4637a",
+      desc = "#575279",
+      icon = "#ea9d34",
+      key = "#d7827e",
+      special = "#56949f",
+      footer = "#286983",
+    },
+    PaperColor = {
+      header = "#af8700",
+      desc = "#444444",
+      icon = "#d75f00",
+      key = "#d70000",
+      special = "#0087af",
+      footer = "#5f8700",
+    },
+    edge = {
+      header = "#db8e3e",
+      desc = "#4b505b",
+      icon = "#e57c46",
+      key = "#bf616a",
+      special = "#5e81ac",
+      footer = "#7cb66d",
+    },
+    solarized = {
+      header = "#b58900",
+      desc = "#586e75",
+      icon = "#cb4b16",
+      key = "#dc322f",
+      special = "#268bd2",
+      footer = "#859900",
+    },
+  }
+
+  return palettes[theme] or {
+    header = "#7aa2f7",
+    desc = "#c0caf5",
+    icon = "#ff9e64",
+    key = "#f7768e",
+    special = "#7dcfff",
+    footer = "#9ece6a",
+  }
+end
+
 local function setup_dashboard_highlights()
-  vim.api.nvim_set_hl(0, "SnacksDashboardHeader", { fg = "#fabd2f", bold = true })
-  vim.api.nvim_set_hl(0, "SnacksDashboardDesc", { fg = "#ebdbb2" })
-  vim.api.nvim_set_hl(0, "SnacksDashboardIcon", { fg = "#fe8019" })
-  vim.api.nvim_set_hl(0, "SnacksDashboardKey", { fg = "#fb4934", bold = true })
-  vim.api.nvim_set_hl(0, "SnacksDashboardSpecial", { fg = "#83a598", italic = true })
-  vim.api.nvim_set_hl(0, "SnacksDashboardFooter", { fg = "#8ec07c", italic = true })
+  local p = dashboard_palette()
+  vim.api.nvim_set_hl(0, "SnacksDashboardHeader", { fg = p.header, bold = true })
+  vim.api.nvim_set_hl(0, "SnacksDashboardDesc", { fg = p.desc })
+  vim.api.nvim_set_hl(0, "SnacksDashboardIcon", { fg = p.icon })
+  vim.api.nvim_set_hl(0, "SnacksDashboardKey", { fg = p.key, bold = true })
+  vim.api.nvim_set_hl(0, "SnacksDashboardSpecial", { fg = p.special, italic = true })
+  vim.api.nvim_set_hl(0, "SnacksDashboardFooter", { fg = p.footer, italic = true })
 end
 
 ensure_dashboard_new_file_command()
 
 vim.api.nvim_create_autocmd("ColorScheme", {
-  callback = setup_dashboard_highlights,
+  callback = function()
+    setup_dashboard_highlights()
+    vim.schedule(function()
+      local ok, snacks = pcall(require, "snacks")
+      if ok and snacks.dashboard then
+        snacks.dashboard.update()
+      end
+    end)
+  end,
 })
 setup_dashboard_highlights()
 
@@ -192,12 +304,8 @@ local header = [[
 ╚═╝      ╚═════╝ ╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝
 ]]
 
-local function cava_installed()
-  return vim.fn.executable("cava") == 1
-end
-
-local function cmatrix_installed()
-  return vim.fn.executable("cmatrix") == 1
+local function htop_installed()
+  return vim.fn.executable("htop") == 1
 end
 
 local function in_git_repo()
@@ -397,6 +505,7 @@ return {
         { icon = " ", key = "e", desc = "New file", action = ":DashboardNewFile" },
         { icon = " ", key = "f", desc = "Find file", action = ":Telescope find_files" },
         { icon = " ", key = "g", desc = "Find text", action = ":Telescope live_grep" },
+        { icon = "󰓅 ", key = "h", desc = "Htop", action = ":Htop" },
         { icon = " ", key = "r", desc = "Recent files", action = ":Telescope oldfiles" },
         { icon = " ", key = "n", desc = "File tree", action = ":Neotree toggle" },
         { icon = " ", key = "s", desc = "Settings", action = ":e $MYVIMRC" },
@@ -411,48 +520,25 @@ return {
       { section = "startup", padding = 1 },
       {
         pane = 2,
-        icon = "󰘦 ",
-        title = "Matrix flow",
+        icon = "󰓅 ",
+        title = "System monitor",
         section = "terminal",
-        enabled = cmatrix_installed,
-        cmd = "cmatrix -abs -u 3",
-        width = 60,
-        height = 12,
+        enabled = htop_installed,
+        cmd = "htop --readonly --sort-key=PERCENT_CPU --tree --highlight-changes=3 --delay=5 --max-iterations=2 --no-mouse",
+        width = 72,
+        height = 28,
+        ttl = 30,
         padding = 1,
       },
       {
         pane = 2,
         icon = " ",
-        title = "Matrix flow",
+        title = "System monitor",
         section = "terminal",
         enabled = function()
-          return not cmatrix_installed()
+          return not htop_installed()
         end,
-        cmd = "printf 'Install cmatrix:\\n  sudo pacman -S cmatrix\\n'",
-        height = 4,
-        padding = 1,
-      },
-      {
-        pane = 2,
-        icon = "󰺢 ",
-        title = "Audio visualizer",
-        section = "terminal",
-        enabled = cava_installed,
-        cmd = "cava -p ~/.config/cava/nvim-gruvbox.conf",
-        indent = 2,
-        width = 60,
-        height = 12,
-        padding = 1,
-      },
-      {
-        pane = 2,
-        icon = " ",
-        title = "Audio visualizer",
-        section = "terminal",
-        enabled = function()
-          return not cava_installed()
-        end,
-        cmd = "printf 'Install cava to enable visualizer:\\n  sudo pacman -S cava\\n'",
+        cmd = "printf 'Install htop to enable system monitor:\\n  sudo xbps-install -S htop\\n'",
         height = 4,
         padding = 1,
       },
