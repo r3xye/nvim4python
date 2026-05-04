@@ -1,33 +1,36 @@
 # nvim4python
 
-A Neovim configuration for Python, C/C++, and Typst with a ready-to-use dashboard, LSP, code running, and debugging.
+Neovim config for Python, C/C++, and Typst.
 
-## What's Included
+It includes:
 
-- `alpha-nvim` dashboard with quick actions and fast new-file creation.
-- `neo-tree` file explorer.
-- `telescope` for file/text/buffer/git search.
-- `nvim-lspconfig` + `mason` + `cmp` for LSP and completion.
-- LSP servers: `pyright`, `ruff`, `lua_ls`, `tinymist`, `clangd`.
-- `nvim-dap` + `nvim-dap-python` for debugging.
-- `bufferline` (VS-style) and `lualine` (full path + cwd + current theme).
-- `gitsigns`, `which-key`, `nvim-autopairs`, `Comment.nvim`, `indent-blankline`, `toggleterm`.
-- Theme collection with Telescope-based picker.
+- dashboard via `alpha-nvim`
+- file explorer via `neo-tree`
+- search via `telescope`
+- LSP/completion via `nvim-lspconfig`, `mason`, `cmp`
+- Python/C/C++/Typst treesitter support
+- debugging via `nvim-dap` and `nvim-dap-python`
+- Typst watch + Zathura preview
+- `kitty` runner with fallback to a built-in floating terminal
 
-## Installation
+## Install
 
-1. Install Neovim `0.9+`.
-2. Put these files into `~/.config/nvim`.
-3. Start Neovim; `lazy.nvim` will install plugins automatically.
+1. Copy `config/*` into `~/.config/nvim/`
+2. Start `nvim`
+3. Let `lazy.nvim` install plugins
 
-## Dashboard
+Neovim `0.9+` is required.
 
-On the start screen, `e` (`New file`) opens a selector:
+## Important Behavior
 
-- `1` -> `Python (.py)`
-- `2` -> `C++ (.cpp)`
-- `3` -> `Typst (.typ)`
-- `q` / `Esc` -> cancel
+- `<leader>r`
+  - `.py` and `.c/.cc/.cpp/.cxx` run in a new `kitty` window if `kitty` exists
+  - if `kitty` is missing, they fall back to the built-in floating terminal in Neovim
+  - `.typ/.typst` toggles `typst watch`
+- `<leader>R`
+  - always runs `.py` and `.c/.cc/.cpp/.cxx` in the built-in floating terminal
+- Typst PDFs are written into a `pdf/` directory next to the source file
+  - example: `notes/main.typ` -> `notes/pdf/main.pdf`
 
 ## Keymaps
 
@@ -40,25 +43,19 @@ On the start screen, `e` (`New file`) opens a selector:
 - `<leader>fg` - live grep
 - `<leader>fb` - buffers
 - `<leader>fh` - help tags
-- `<leader>gs` - git status (Telescope)
+- `<leader>gs` - git status
 - `<leader>gc` - git commits
 - `<leader>gb` - git branches
 
 ### Run and Utilities
 
-- `<leader>r` - run current file:
-  - `.py` -> `python <file>` in a new `kitty` window
-  - `.c/.cc/.cpp/.cxx` -> compile with `g++` and run
-  - `.typ/.typst` -> toggle `typst watch`
-- `<leader>R` - run `.py` / `.c/.cc/.cpp/.cxx` in a Neovim terminal buffer
-- `<leader>s` - stop current run (or typst watch/preview)
+- `<leader>r` - run current file
+- `<leader>R` - run current file in floating terminal
+- `<leader>s` - stop current run or Typst watch
 - `<leader>fr` - rename current file
+- `<leader>br` - rename current buffer
+- `<leader>hh` - toggle floating `htop`
 - `<leader>dR` - `ruff check --fix` + `ruff format`
-
-### Editing
-
-- in visual mode: `/` toggles comment for selection
-- in visual mode: `>` / `<` keeps selection after indenting
 
 ### LSP
 
@@ -79,59 +76,94 @@ On the start screen, `e` (`New file`) opens a selector:
 - `<leader>dr` - REPL
 - `<leader>dl` - run last
 
-### Bufferline
+## Required Binaries
 
-- `<leader>bN` - new buffer
-- `<leader>bn` - next buffer
-- `<leader>bp` - previous buffer
-- `<leader>bd` - close buffer
-- `<leader>bo` - close other buffers
-- `<leader>br` - rename current buffer name
+Recommended in `PATH`:
 
-### Themes
-
-- `<leader>t` - open theme picker (Telescope)
-
-## Important Dependencies
-
-Recommended binaries in PATH:
-
-- `python` (or `python3`)
+- `python` or `python3`
 - `g++`
-- `clangd`
 - `ruff`
 - `typst`
-- `kitty` (required for `<leader>r` on `.py`/`.cpp`)
-
-For Typst preview:
-
 - `zathura`
+- `zathura-pdf-poppler`
 
-For C/C++ debugging:
+Useful but optional:
 
-- `codelldb` (preferred) or `lldb-vscode`
+- `kitty`
+  - used by `<leader>r` for Python/C/C++
+  - if missing, the config falls back to the built-in floating terminal
+- `clangd`
+- `pyright`
+- `tinymist`
+- `lua-language-server`
+- `lldb-vscode`
+  - only needed for C/C++ debugging
 
 ## Arch Linux
 
-Install dependencies via `pacman`:
+Core packages:
 
 ```bash
-sudo pacman -S --needed neovim python gcc clang ruff typst kitty zathura codelldb lldb
+sudo pacman -S --needed neovim python gcc clang ruff typst zathura zathura-pdf-poppler kitty
 ```
 
-## Statusline and Tabs
+LSP/debug extras:
 
-- `lualine` shows:
-  - mode
-  - git branch/diff/diagnostics
-  - **full path of the current file**
-  - cwd
-  - active theme (`theme:<name>`)
-  - encoding/fileformat/filetype
-- `bufferline` is configured in a VS-like style with diagnostics and active-buffer indicator.
-- `indent-blankline` uses dotted indent guides `┊`.
+```bash
+sudo pacman -S --needed pyright tinymist lua-language-server lldb
+```
 
-## Notes
+Notes:
 
-- If highlighting/plugins do not update after changes, restart Neovim.
-- To reload a single config file: `:source ~/.config/nvim/lua/config/<file>.lua`.
+- `clangd` comes from `clang`
+- this README intentionally does not use `codelldb`
+- `lldb` is enough for the config because it looks for `lldb-vscode`
+
+## Void Linux
+
+Core packages:
+
+```bash
+sudo xbps-install -Su neovim python3 gcc clang ruff typst zathura zathura-pdf-poppler kitty
+```
+
+LSP extras:
+
+```bash
+sudo xbps-install -Su pyright tinymist lua-language-server
+```
+
+Notes:
+
+- package names above were checked locally with `xbps-query`
+- if your `Void` setup exposes `clangd` or `lldb-vscode` from a different package split, verify with:
+
+```bash
+xbps-query -Rs clang
+xbps-query -Rs lldb
+```
+
+## Typst Preview
+
+For PDF preview, install both:
+
+- `zathura`
+- `zathura-pdf-poppler`
+
+Without `zathura-pdf-poppler`, Zathura opens but PDF support is missing.
+
+## Reloading Config
+
+For a single file:
+
+```vim
+:luafile ~/.config/nvim/lua/config/keymaps.lua
+```
+
+For a broader reload:
+
+```vim
+:source ~/.config/nvim/init.lua
+```
+
+In practice, after larger changes, restarting `nvim` is the safer option.

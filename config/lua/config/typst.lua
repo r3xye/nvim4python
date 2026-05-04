@@ -26,7 +26,15 @@ local function get_typst_file()
 end
 
 local function get_pdf_path(typst_file)
-  return vim.fn.fnamemodify(typst_file, ":r") .. ".pdf"
+  local source_dir = vim.fn.fnamemodify(typst_file, ":p:h")
+  local output_dir = source_dir .. "/pdf"
+  return output_dir .. "/" .. vim.fn.fnamemodify(typst_file, ":t:r") .. ".pdf"
+end
+
+local function ensure_pdf_dir(typst_file)
+  local pdf_dir = vim.fn.fnamemodify(get_pdf_path(typst_file), ":h")
+  vim.fn.mkdir(pdf_dir, "p")
+  return pdf_dir
 end
 
 local function ensure_typst()
@@ -47,6 +55,7 @@ local function compile_typst()
     return
   end
 
+  ensure_pdf_dir(file)
   local pdf = get_pdf_path(file)
   local output = vim.fn.system({ "typst", "compile", file, pdf })
   if vim.v.shell_error ~= 0 then
@@ -67,6 +76,7 @@ local function preview_typst()
     return
   end
 
+  ensure_pdf_dir(file)
   local pdf = get_pdf_path(file)
   local output = vim.fn.system({ "typst", "compile", file, pdf })
   if vim.v.shell_error ~= 0 then
@@ -146,6 +156,7 @@ local function toggle_preview_typst()
     return
   end
 
+  ensure_pdf_dir(file)
   local output = vim.fn.system({ "typst", "compile", file, pdf })
   if vim.v.shell_error ~= 0 then
     vim.notify("Typst compile failed: " .. output, vim.log.levels.ERROR)
@@ -179,7 +190,9 @@ local function watch_typst()
     return
   end
 
-  local cmd = { "typst", "watch", file }
+  ensure_pdf_dir(file)
+  local pdf = get_pdf_path(file)
+  local cmd = { "typst", "watch", file, pdf }
   local job_id = vim.fn.jobstart(cmd, { detach = true })
   if job_id <= 0 then
     vim.notify("Failed to start typst watch", vim.log.levels.ERROR)
@@ -187,7 +200,6 @@ local function watch_typst()
   end
 
   vim.g.typst_watch_job_id = job_id
-  local pdf = get_pdf_path(file)
   if vim.fn.executable("zathura") == 1 then
     local zathura_running = false
     if vim.fn.executable("pgrep") == 1 then

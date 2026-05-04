@@ -54,57 +54,36 @@ local function rename_current_buffer()
   end)
 end
 
-local function get_live_run_terminal()
-  local bufnr = vim.g.last_run_term_buf
-  if not bufnr or bufnr == 0 or not vim.api.nvim_buf_is_valid(bufnr) then
-    return nil, nil
-  end
-  if vim.bo[bufnr].buftype ~= "terminal" then
-    return nil, nil
-  end
-
-  local ok, job_id = pcall(vim.api.nvim_buf_get_var, bufnr, "terminal_job_id")
-  if not ok or not job_id or vim.fn.jobwait({ job_id }, 0)[1] ~= -1 then
-    return nil, nil
-  end
-
-  return bufnr, job_id
-end
-
-local function ensure_run_terminal()
-  local bufnr, job_id = get_live_run_terminal()
-  if bufnr and job_id then
-    local wins = vim.fn.win_findbuf(bufnr)
-    if #wins > 0 then
-      vim.api.nvim_set_current_win(wins[1])
-    else
-      vim.cmd("botright split")
-      vim.cmd("resize 14")
-      vim.api.nvim_win_set_buf(0, bufnr)
-    end
-    vim.cmd("startinsert")
-    return job_id
-  end
-
-  vim.cmd("botright split")
-  vim.cmd("resize 14")
-  vim.cmd("terminal")
-  local term_buf = vim.api.nvim_get_current_buf()
-  local term_job = vim.b.terminal_job_id
-  vim.g.last_run_term_buf = term_buf
-  vim.cmd("startinsert")
-  return term_job
-end
-
 local function run_in_buffer_terminal(cmd, desc)
-  local job_id = ensure_run_terminal()
-  if not job_id then
-    vim.notify("Failed to open terminal buffer", vim.log.levels.ERROR)
+  local _, live_job = terminal.get_runner_job()
+  if not live_job then
+    terminal.open_runner()
+  end
+
+  if not terminal.send_to_runner(cmd) then
     return
   end
 
-  vim.fn.chansend(job_id, cmd .. "\n")
   vim.g.last_run_desc = desc or cmd
+end
+
+local function run_in_kitty_terminal(cmd, desc)
+  if vim.fn.executable("kitty") ~= 1 then
+    return run_in_buffer_terminal(cmd, desc)
+  end
+
+  local cwd = vim.fn.getcwd()
+  local job_id = vim.fn.jobstart({ "kitty", "--working-directory", cwd, "--hold", "sh", "-lc", cmd }, { detach = true })
+  if job_id <= 0 then
+    return run_in_buffer_terminal(cmd, desc)
+  end
+
+  vim.g.last_run_job_id = job_id
+  vim.g.last_run_desc = desc or cmd
+end
+
+local function run_in_terminal(cmd, desc)
+  run_in_kitty_terminal(cmd, desc)
 end
 
 local function run_current_file_in_buffer()
@@ -153,23 +132,6 @@ local function run_current_file_in_buffer()
   end
 
   vim.notify("Buffer runner supports only Python and C/C++", vim.log.levels.WARN)
-end
-
-local function run_in_terminal(cmd, desc)
-  if vim.fn.executable("kitty") ~= 1 then
-    vim.notify("kitty not found in PATH", vim.log.levels.ERROR)
-    return
-  end
-
-  local cwd = vim.fn.getcwd()
-  local job_id = vim.fn.jobstart({ "kitty", "--working-directory", cwd, "--hold", "sh", "-lc", cmd }, { detach = true })
-  if job_id <= 0 then
-    vim.notify("Failed to run command in kitty", vim.log.levels.ERROR)
-    return
-  end
-
-  vim.g.last_run_job_id = job_id
-  vim.g.last_run_desc = desc or cmd
 end
 
 local function run_python_module_in_terminal()
@@ -276,7 +238,7 @@ vim.keymap.set("n", "<leader>fr", rename_current_file, { desc = "Rename file" })
 vim.keymap.set("n", "<leader>br", rename_current_buffer, { desc = "Rename buffer" })
 vim.keymap.set("n", "<leader>q", open_dashboard, { desc = "Open dashboard" })
 vim.keymap.set("n", "<leader>r", run_current_file, { desc = "Run current file" })
-vim.keymap.set("n", "<leader>R", run_current_file_in_buffer, { desc = "Run current file in buffer" })
+vim.keymap.set("n", "<leader>R", run_current_file_in_buffer, { desc = "Run current file in floating terminal" })
 vim.keymap.set("n", "<leader>hh", terminal.toggle_htop, { desc = "Toggle htop" })
 
 local function stop_last_run()
@@ -287,19 +249,9 @@ local function stop_last_run()
     return
   end
 
-  local term_buf, term_job = get_live_run_terminal()
+  local term_buf, term_job = terminal.get_runner_job()
   if term_buf and term_job then
-    vim.fn.jobstop(term_job)
-    local wins = vim.fn.win_findbuf(term_buf)
-    for _, win in ipairs(wins) do
-      if vim.api.nvim_win_is_valid(win) then
-        vim.api.nvim_win_close(win, true)
-      end
-    end
-    if vim.api.nvim_buf_is_valid(term_buf) then
-      vim.api.nvim_buf_delete(term_buf, { force = true })
-    end
-    vim.g.last_run_term_buf = nil
+    terminal.stop_runner()
     local desc = vim.g.last_run_desc or "last run"
     vim.notify("Stopped: " .. desc, vim.log.levels.INFO)
     return
