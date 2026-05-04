@@ -82,6 +82,21 @@ local function populate_new_buffer(name, preset)
   end
 end
 
+local function open_existing_buffer_or_edit(path)
+  local bufnr = vim.fn.bufnr(path)
+  if bufnr > 0 and vim.api.nvim_buf_is_valid(bufnr) then
+    vim.cmd("buffer " .. bufnr)
+    return true
+  end
+
+  local ok, err = pcall(vim.cmd, "e " .. vim.fn.fnameescape(path))
+  if not ok then
+    vim.notify(tostring(err), vim.log.levels.WARN)
+    return false
+  end
+  return true
+end
+
 local function create_new_file(name)
   local trimmed = vim.trim(name or "")
   if trimmed == "" then
@@ -299,14 +314,9 @@ local header = [[
 ██║  ██║██║   ██║██║  ██║██║  ██║██╔████╔██║██║   ██║██║  ██║██║  ██║
 ██████╔╝██║   ██║██████╔╝███████║██║╚██╔╝██║██║   ██║██████╔╝███████║
 ██╔═══╝ ██║   ██║██╔═══╝ ██╔══██║██║ ╚═╝ ██║██║   ██║██╔═══╝ ██╔══██║
-██║     ██║   ██║██║     ██║  ██║██║     ██║██║   ██║██║     ██║  ██║
 ██║     ╚██████╔╝██║     ██║  ██║██║     ██║╚██████╔╝██║     ██║  ██║
 ╚═╝      ╚═════╝ ╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝
 ]]
-
-local function htop_installed()
-  return vim.fn.executable("htop") == 1
-end
 
 local function in_git_repo()
   local ok, snacks = pcall(require, "snacks")
@@ -458,8 +468,9 @@ local function recent_files_dashboard_items(limit)
         action = function()
           local dir = normalize_dir(vim.fn.fnamemodify(normalized, ":h"))
           vim.cmd("cd " .. vim.fn.fnameescape(dir))
-          vim.cmd("e " .. vim.fn.fnameescape(normalized))
-          vim.cmd("redrawstatus")
+          if open_existing_buffer_or_edit(normalized) then
+            vim.cmd("redrawstatus")
+          end
         end,
         autokey = true,
       }
@@ -492,84 +503,50 @@ local function recent_files_dashboard_items(limit)
   end
 end
 
+local function dashboard_value_list(title, icon, value, padding)
+  return {
+    pane = 1,
+    icon = icon,
+    title = title,
+    indent = 2,
+    padding = padding or 1,
+    { text = value, indent = 4, padding = 0 },
+  }
+end
+
+local function cwd_dashboard_item()
+  return function()
+    local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
+    local theme = vim.g.colors_name or "none"
+    return {
+      dashboard_value_list("cwd", " ", cwd, 1),
+      dashboard_value_list("theme", "󰸌 ", theme, 0),
+    }
+  end
+end
+
 return {
   animate = { enabled = true },
   dashboard = {
     enabled = true,
     width = 64,
-    pane_gap = 4,
+    pane_gap = 3,
     autokeys = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
     preset = {
       header = header,
       keys = {
         { icon = " ", key = "e", desc = "New file", action = ":DashboardNewFile" },
         { icon = " ", key = "f", desc = "Find file", action = ":Telescope find_files" },
-        { icon = " ", key = "g", desc = "Find text", action = ":Telescope live_grep" },
-        { icon = "󰓅 ", key = "h", desc = "Htop", action = ":Htop" },
         { icon = " ", key = "r", desc = "Recent files", action = ":Telescope oldfiles" },
-        { icon = " ", key = "n", desc = "File tree", action = ":Neotree toggle" },
-        { icon = " ", key = "s", desc = "Settings", action = ":e $MYVIMRC" },
-        { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
         { icon = " ", key = "q", desc = "Quit", action = ":qa" },
       },
     },
     sections = {
-      { section = "header" },
-      { section = "keys", gap = 1, padding = 1 },
+      { section = "header", padding = 3 },
+      { section = "keys", gap = 1, padding = 2 },
       recent_files_dashboard_items(5),
-      { section = "startup", padding = 1 },
-      {
-        pane = 2,
-        icon = "󰓅 ",
-        title = "System monitor",
-        section = "terminal",
-        enabled = htop_installed,
-        cmd = "htop --readonly --sort-key=PERCENT_CPU --tree --highlight-changes=3 --delay=5 --max-iterations=2 --no-mouse",
-        width = 72,
-        height = 28,
-        ttl = 30,
-        padding = 1,
-      },
-      {
-        pane = 2,
-        icon = " ",
-        title = "System monitor",
-        section = "terminal",
-        enabled = function()
-          return not htop_installed()
-        end,
-        cmd = "printf 'Install htop to enable system monitor:\\n  sudo xbps-install -S htop\\n'",
-        height = 4,
-        padding = 1,
-      },
-      {
-        pane = 2,
-        icon = "󰜘 ",
-        title = "Commit stats",
-        section = "terminal",
-        enabled = in_git_repo,
-        cmd = [[sh -c '
-name="$(git config user.name)"
-total="$(git rev-list --count HEAD 2>/dev/null || echo 0)"
-repo_today="$(git rev-list --count --since="00:00" HEAD 2>/dev/null || echo 0)"
-if [ -n "$name" ]; then
-  you_total="$(git rev-list --count --author="$name" HEAD 2>/dev/null || echo 0)"
-  you_today="$(git rev-list --count --since="00:00" --author="$name" HEAD 2>/dev/null || echo 0)"
-  printf "Repo total: %s\n" "$total"
-  printf "Repo today: %s\n" "$repo_today"
-  printf "You total:  %s\n" "$you_total"
-  printf "You today:  %s\n" "$you_today"
-else
-  printf "Repo total: %s\n" "$total"
-  printf "Repo today: %s\n" "$repo_today"
-  printf "\nSet git user.name for personal stats."
-fi
-' ]],
-        height = 7,
-        padding = 1,
-        ttl = 180,
-      },
-      repository_dashboard_items(),
+      cwd_dashboard_item(),
+      { section = "startup", padding = 2 },
     },
   },
   scroll = { enabled = true },

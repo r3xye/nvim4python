@@ -41,7 +41,6 @@ if cpp_adapter then
   dap.configurations.c = { cpp_launch }
   dap.configurations.rust = { cpp_launch }
 else
-  vim.notify("C/C++ debugger not found (install lldb-vscode)", vim.log.levels.WARN)
 end
 
 -- Keymaps for DAP

@@ -1,7 +1,3 @@
-local function current_theme()
-  return "theme:" .. (vim.g.colors_name or "none")
-end
-
 local function full_filepath()
   local path = vim.fn.expand("%:p")
   if path == "" then
@@ -11,7 +7,11 @@ local function full_filepath()
 end
 
 local function active_cwd()
-  return "cwd:" .. vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
+  return vim.fn.fnamemodify(vim.fn.getcwd(), ":~")
+end
+
+local function current_theme()
+  return vim.g.colors_name or "none"
 end
 
 require("lualine").setup({
@@ -24,10 +24,12 @@ require("lualine").setup({
   sections = {
     lualine_a = { "mode" },
     lualine_b = { "branch", "diff", "diagnostics" },
-    lualine_c = { { full_filepath } },
+    lualine_c = { { full_filepath, path = 1, shorting_target = 80 } },
     lualine_x = {
-      { active_cwd, icon = "" },
-      { current_theme },
+      { function() return "cwd:" end, padding = { left = 1, right = 0 } },
+      { active_cwd, padding = { left = 0, right = 1 } },
+      { function() return "theme:" end, padding = { left = 1, right = 0 } },
+      { current_theme, padding = { left = 0, right = 1 } },
       "encoding",
       "fileformat",
       "filetype",

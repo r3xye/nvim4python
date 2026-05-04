@@ -4,14 +4,15 @@ Neovim config for Python, C/C++, and Typst.
 
 It includes:
 
-- dashboard via `alpha-nvim`
+- dashboard via `snacks.nvim`
 - file explorer via `neo-tree`
 - search via `telescope`
 - LSP/completion via `nvim-lspconfig`, `mason`, `cmp`
-- Python/C/C++/Typst treesitter support
+- statusline via `lualine` and buffers via `bufferline`
 - debugging via `nvim-dap` and `nvim-dap-python`
 - Typst watch + Zathura preview
 - `kitty` runner with fallback to a built-in floating terminal
+- theme picker with multiple bundled colorschemes
 
 ## Install
 
@@ -19,16 +20,20 @@ It includes:
 2. Start `nvim`
 3. Let `lazy.nvim` install plugins
 
-Neovim `0.9+` is required.
+Neovim `0.11+` is required.
 
 ## Important Behavior
 
+- dashboard is opened by default and also on `<leader>q`
+- dashboard shows `Recent files`, `cwd`, and `theme`
 - `<leader>r`
   - `.py` and `.c/.cc/.cpp/.cxx` run in a new `kitty` window if `kitty` exists
   - if `kitty` is missing, they fall back to the built-in floating terminal in Neovim
   - `.typ/.typst` toggles `typst watch`
 - `<leader>R`
   - always runs `.py` and `.c/.cc/.cpp/.cxx` in the built-in floating terminal
+- `<leader>t`
+  - opens the theme picker
 - Typst PDFs are written into a `pdf/` directory next to the source file
   - example: `notes/main.typ` -> `notes/pdf/main.pdf`
 
@@ -52,6 +57,8 @@ Neovim `0.9+` is required.
 - `<leader>r` - run current file
 - `<leader>R` - run current file in floating terminal
 - `<leader>s` - stop current run or Typst watch
+- `<leader>t` - open theme picker
+- `<leader>q` - open dashboard
 - `<leader>fr` - rename current file
 - `<leader>br` - rename current buffer
 - `<leader>hh` - toggle floating `htop`

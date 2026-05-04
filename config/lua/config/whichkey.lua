@@ -1,10 +1,10 @@
 require("which-key").setup({
   notify = false,
   plugins = {
-    marks = true,
-    registers = true,
+    marks = false,
+    registers = false,
     spelling = {
-      enabled = true,
+      enabled = false,
       suggestions = 20,
     },
     presets = {
@@ -37,23 +37,27 @@ require("which-key").setup({
     width = { min = 20, max = 50 },
     spacing = 3,
   },
-  show_help = true,
+  show_help = false,
   triggers = {
-    { "<auto>", mode = "nxso" },
+    { "<leader>", mode = { "n", "v" } },
   },
 })
 
 -- Register keymaps
 local wk = require("which-key")
 wk.register({
-  ["<leader>b"] = { name = "Buffers" },
-  ["<leader>c"] = { name = "Colors" },
-  ["<leader>d"] = { name = "Debug/Ruff" },
-  ["<leader>e"] = { name = "Explorer" },
-  ["<leader>f"] = { name = "Files/Find" },
+  ["<leader>,"] = "Previous buffer",
+  ["<leader>."] = "Next buffer",
+  ["<leader>R"] = "Run in floating terminal",
+  ["<leader>b"] = { name = "Buffer" },
+  ["<leader>d"] = { name = "Debug" },
+  ["<leader>e"] = "Explorer",
+  ["<leader>f"] = { name = "File" },
   ["<leader>g"] = { name = "Git" },
-  ["<leader>h"] = { name = "Git Hunk" },
+  ["<leader>h"] = { name = "Hunk" },
   ["<leader>l"] = { name = "LSP" },
-  ["<leader>r"] = { name = "Run" },
-  ["<leader>t"] = { name = "Theme" },
+  ["<leader>q"] = "Dashboard",
+  ["<leader>r"] = "Run current file",
+  ["<leader>s"] = "Stop current run",
+  ["<leader>t"] = "Theme picker",
 })

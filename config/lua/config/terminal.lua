@@ -1,10 +1,5 @@
 local M = {}
 
-local htop_state = {
-  buf = nil,
-  win = nil,
-}
-
 local runner_state = {
   buf = nil,
   win = nil,
@@ -16,13 +11,6 @@ end
 
 local function is_valid_win(win)
   return win and vim.api.nvim_win_is_valid(win)
-end
-
-local function close_htop()
-  if is_valid_win(htop_state.win) then
-    vim.api.nvim_win_close(htop_state.win, true)
-  end
-  htop_state.win = nil
 end
 
 local function close_runner()
@@ -44,15 +32,14 @@ local function apply_terminal_style(buf, win, filetype, title)
   vim.wo[win].winblend = 6
   vim.wo[win].spell = false
 
-  local prefix = title == " htop " and "Htop" or "Runner"
-  vim.api.nvim_set_hl(0, prefix .. "Float", { link = "NormalFloat" })
-  vim.api.nvim_set_hl(0, prefix .. "Border", { link = "FloatBorder" })
-  vim.api.nvim_set_hl(0, prefix .. "Title", { link = "Title" })
+  vim.api.nvim_set_hl(0, "RunnerFloat", { link = "NormalFloat" })
+  vim.api.nvim_set_hl(0, "RunnerBorder", { link = "FloatBorder" })
+  vim.api.nvim_set_hl(0, "RunnerTitle", { link = "Title" })
 
   vim.api.nvim_set_option_value("winhighlight", table.concat({
-    "Normal:" .. prefix .. "Float",
-    "FloatBorder:" .. prefix .. "Border",
-    "FloatTitle:" .. prefix .. "Title",
+    "Normal:RunnerFloat",
+    "FloatBorder:RunnerBorder",
+    "FloatTitle:RunnerTitle",
   }, ","), { scope = "local", win = win })
 end
 
@@ -83,40 +70,6 @@ local function open_floating_terminal(state, opts)
   state.win = win
   apply_terminal_style(buf, win, opts.filetype, opts.title)
   return buf, win
-end
-
-function M.toggle_htop()
-  if is_valid_win(htop_state.win) then
-    close_htop()
-    return
-  end
-
-  if vim.fn.executable("htop") ~= 1 then
-    vim.notify("htop not found in PATH", vim.log.levels.ERROR)
-    return
-  end
-
-  local buf, _ = open_floating_terminal(htop_state, {
-    filetype = "htop",
-    title = " htop ",
-  })
-  if vim.bo[buf].buftype ~= "terminal" then
-    vim.fn.termopen("htop", {
-      on_exit = function()
-        vim.schedule(function()
-          if is_valid_buf(buf) then
-            vim.api.nvim_buf_delete(buf, { force = true })
-          end
-          htop_state.buf = nil
-          htop_state.win = nil
-        end)
-      end,
-    })
-
-    vim.keymap.set("t", "q", close_htop, { buffer = buf, silent = true, nowait = true })
-  end
-
-  vim.cmd.startinsert()
 end
 
 function M.open_runner()
@@ -209,8 +162,6 @@ function M.stop_runner()
 end
 
 function M.setup()
-  vim.api.nvim_create_user_command("Htop", M.toggle_htop, { desc = "Toggle floating htop" })
-
   vim.api.nvim_create_autocmd("TermOpen", {
     callback = function(args)
       vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { buffer = args.buf })
@@ -219,11 +170,6 @@ function M.setup()
 
   vim.api.nvim_create_autocmd("VimResized", {
     callback = function()
-      if is_valid_win(htop_state.win) then
-        close_htop()
-        M.toggle_htop()
-      end
-
       if is_valid_win(runner_state.win) then
         close_runner()
         M.open_runner()

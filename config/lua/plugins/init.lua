@@ -40,16 +40,6 @@ return {
     end,
   },
 
-  -- Treesitter for syntax highlighting
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    event = "VeryLazy",
-    config = function()
-      pcall(require, "config.treesitter")
-    end,
-  },
-
   -- LSP
   "neovim/nvim-lspconfig",
   "williamboman/mason.nvim",
@@ -95,15 +85,6 @@ return {
 
   -- Git integration
   "lewis6991/gitsigns.nvim",
-
-  -- Color picker / highlighting
-  {
-    "uga-rosa/ccc.nvim",
-    event = { "BufReadPost", "BufNewFile" },
-    config = function()
-      require("config.colors").setup()
-    end,
-  },
 
   -- Debugger
   "mfussenegger/nvim-dap",

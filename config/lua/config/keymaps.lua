@@ -239,7 +239,6 @@ vim.keymap.set("n", "<leader>br", rename_current_buffer, { desc = "Rename buffer
 vim.keymap.set("n", "<leader>q", open_dashboard, { desc = "Open dashboard" })
 vim.keymap.set("n", "<leader>r", run_current_file, { desc = "Run current file" })
 vim.keymap.set("n", "<leader>R", run_current_file_in_buffer, { desc = "Run current file in floating terminal" })
-vim.keymap.set("n", "<leader>hh", terminal.toggle_htop, { desc = "Toggle htop" })
 
 local function stop_last_run()
   local file = vim.api.nvim_buf_get_name(0)
