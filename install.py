@@ -56,7 +56,7 @@ def find_manager() -> PackageManager:
     sys.exit(1)
 
 
-def download_package():
+def download_package() -> None:
     packages = ["neovim", "lldb", "python", "gcc", "clang", "ruff", "zathura", "zathura-pdf-poppler", "kitty", "typst", "pyright", "tinymist", "lua-language-server"]
     pm = find_manager()
     print(f"Manager is {pm.name}")
@@ -72,7 +72,7 @@ def download_package():
             print(f"Package: {pkg} exists")
 
 
-def findNeovim():
+def findNeovim() -> str:
     while True:
         output = sb.check_output(["ls", home + ".config"], text=True)
         if "nvim" in output.splitlines():
@@ -102,7 +102,7 @@ def findNeovim():
     return nvimdir    
 
 
-def download():
+def download() -> None:
     ndir = findNeovim()
 
     result = sb.run(["git", "fetch"])
@@ -131,7 +131,7 @@ def download():
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     download_package()
     download()
 
