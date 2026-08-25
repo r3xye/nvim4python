@@ -74,24 +74,37 @@ def download_package() -> None:
 
 def findNeovim() -> str:
     while True:
-        output = sb.check_output(["ls", home + ".config"], text=True)
-        if "nvim" in output.splitlines():
-            print("Nvim directory was found")
+        stow = Path(home + ".dotfiles")
+        userdir = sb.check_output(["ls", home + ".config"], text=True)
+        if stow.is_dir():
+            stowdir = sb.check_output(["ls", home + ".dotfiles/.config"], text=True)
+        if "nvim" in stowdir.splitlines():
+            nvimdir = str(stow) + "/.config/nvim"
+            print(f"Nvim directory was found at {nvimdir}")
+            break    
+        elif "nvim" in userdir.splitlines():
             nvimdir = home + ".config/nvim"
-            break
+            print(f"Nvim directory was found at {nvimdir}")
+            break    
         else: 
             print("Nvim directory was NOT found")
             answer = input("Want to make new directory? [Y/n] ").strip().lower()
             match answer:
                 case "y"|"":
-                    result = sb.run(["mkdir", "-p", home + ".config/nvim"])
-                    if result.returncode == 0:
-                        print("Created!")
+                    if stow.is_dir():
+                        result = sb.run(["mkdir", "-p", home + ".dotfiles/.config/nvim"])
+                        if result.returncode == 0:
+                            print("Created!")
+                        else:
+                            print("Failed to create directory")
+                            sys.exit(1)
                     else:
-                        print("Failed to create directory")
-                        sys.exit(1)
-                    nvimdir = home + ".config/nvim"
-                    break
+                        result = sb.run(["mkdir", "-p", home + ".config/nvim"])
+                        if result.returncode == 0:
+                            print("Created!")
+                        else:
+                            print("Failed to create directory")
+                            sys.exit(1)
                 case "n":
                     print("Aborted!")
                     sys.exit()
