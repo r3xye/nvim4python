@@ -1,4 +1,3 @@
--- Custom keymaps
 local typst = require("config.typst")
 local python = require("config.python")
 local terminal = require("config.terminal")
@@ -67,13 +66,13 @@ local function run_in_buffer_terminal(cmd, desc)
   vim.g.last_run_desc = desc or cmd
 end
 
-local function run_in_kitty_terminal(cmd, desc)
-  if vim.fn.executable("kitty") ~= 1 then
+local function run_in_alacritty_terminal(cmd, desc)
+  if vim.fn.executable("alacritty") ~= 1 then
     return run_in_buffer_terminal(cmd, desc)
   end
 
   local cwd = vim.fn.getcwd()
-  local job_id = vim.fn.jobstart({ "kitty", "--working-directory", cwd, "--hold", "sh", "-lc", cmd }, { detach = true })
+  local job_id = vim.fn.jobstart({ "alacritty", "--working-directory", cwd, "-e", "sh", "-lc", cmd }, { detach = true })
   if job_id <= 0 then
     return run_in_buffer_terminal(cmd, desc)
   end
@@ -83,7 +82,7 @@ local function run_in_kitty_terminal(cmd, desc)
 end
 
 local function run_in_terminal(cmd, desc)
-  run_in_kitty_terminal(cmd, desc)
+  run_in_alacritty_terminal(cmd, desc)
 end
 
 local function run_current_file_in_buffer()
@@ -307,11 +306,9 @@ end
 
 vim.keymap.set("n", "<leader>dR", run_ruff_on_current_file, { desc = "Ruff fix + format" })
 
--- Comment shortcut in visual mode
 vim.keymap.set("x", "/", function()
   require("config.comment").toggle_visual()
 end, { desc = "Toggle comment selection" })
 
--- Keep selection after indenting in visual mode
 vim.keymap.set("x", ">", ">gv", { desc = "Indent right and keep selection" })
 vim.keymap.set("x", "<", "<gv", { desc = "Indent left and keep selection" })

@@ -57,7 +57,7 @@ def find_manager() -> PackageManager:
 
 
 def download_package() -> None:
-    packages = ["neovim", "lldb", "python", "gcc", "clang", "ruff", "zathura", "zathura-pdf-poppler", "kitty", "typst", "pyright", "tinymist", "lua-language-server"]
+    packages = ["neovim", "lldb", "python", "gcc", "clang", "ruff", "zathura", "zathura-pdf-poppler", "alacritty", "typst", "pyright", "tinymist", "lua-language-server"]
     pm = find_manager()
     print(f"Manager is {pm.name}")
 
@@ -78,39 +78,39 @@ def findNeovim() -> str:
         userdir = sb.check_output(["ls", home + ".config"], text=True)
         if stow.is_dir():
             stowdir = sb.check_output(["ls", home + ".dotfiles/.config"], text=True)
-        if "nvim" in stowdir.splitlines():
-            nvimdir = str(stow) + "/.config/nvim"
-            print(f"Nvim directory was found at {nvimdir}")
-            break    
-        elif "nvim" in userdir.splitlines():
+            if "nvim" in stowdir.splitlines():
+                nvimdir = str(stow) + "/.config/nvim"
+                print(f"Nvim directory was found at {nvimdir}")
+                return nvimdir
+        if "nvim" in userdir.splitlines():
             nvimdir = home + ".config/nvim"
             print(f"Nvim directory was found at {nvimdir}")
-            break    
-        else: 
-            print("Nvim directory was NOT found")
-            answer = input("Want to make new directory? [Y/n] ").strip().lower()
-            match answer:
-                case "y"|"":
-                    if stow.is_dir():
-                        result = sb.run(["mkdir", "-p", home + ".dotfiles/.config/nvim"])
-                        if result.returncode == 0:
-                            print("Created!")
-                        else:
-                            print("Failed to create directory")
-                            sys.exit(1)
+            return nvimdir
+        
+        print("Nvim directory was NOT found")
+        answer = input("Want to make new directory? [Y/n] ").strip().lower()
+        match answer:
+            case "y"|"":
+                if stow.is_dir():
+                    result = sb.run(["mkdir", "-p", home + ".dotfiles/.config/nvim"])
+                    if result.returncode == 0:
+                        print("Created!")
                     else:
-                        result = sb.run(["mkdir", "-p", home + ".config/nvim"])
-                        if result.returncode == 0:
-                            print("Created!")
-                        else:
-                            print("Failed to create directory")
-                            sys.exit(1)
-                case "n":
-                    print("Aborted!")
-                    sys.exit()
-                case _:
-                    print("Command is not recognized")
-                    continue
+                        print("Failed to create directory")
+                        sys.exit(1)
+                else:
+                    result = sb.run(["mkdir", "-p", home + ".config/nvim"])
+                    if result.returncode == 0:
+                        print("Created!")
+                    else:
+                        print("Failed to create directory")
+                        sys.exit(1)
+            case "n":
+                print("Aborted!")
+                sys.exit()
+            case _:
+                print("Command is not recognized")
+                continue
                 
     return nvimdir    
 
