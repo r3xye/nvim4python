@@ -1,6 +1,15 @@
 local typst = require("config.typst")
 local python = require("config.python")
 local terminal = require("config.terminal")
+
+-- Walk up from `start_dir` looking for Cargo.toml; returns its directory or nil
+local function find_cargo_root(start_dir)
+  local found = vim.fs.find("Cargo.toml", { path = start_dir, upward = true, limit = 1 })
+  if #found > 0 then
+    return vim.fs.dirname(found[1])
+  end
+  return nil
+end
 local function rename_current_file()
   local old_path = vim.api.nvim_buf_get_name(0)
   if old_path == "" then
@@ -72,7 +81,7 @@ local function run_in_alacritty_terminal(cmd, desc)
   end
 
   local cwd = vim.fn.getcwd()
-  local job_id = vim.fn.jobstart({ "alacritty", "--working-directory", cwd, "-e", "sh", "-lc", cmd }, { detach = true })
+  local job_id = vim.fn.jobstart({ "alacritty", "--working-directory", cwd, "-e", "sh", "-lc", cmd .. "; exec $SHELL" }, { detach = true })
   if job_id <= 0 then
     return run_in_buffer_terminal(cmd, desc)
   end
@@ -130,7 +139,47 @@ local function run_current_file_in_buffer()
     return
   end
 
-  vim.notify("Buffer runner supports only Python and C/C++", vim.log.levels.WARN)
+  if file:match("%.rs$") then
+    local file_dir = vim.fs.dirname(file)
+    local cargo_root = find_cargo_root(file_dir)
+    local cmd
+    if cargo_root and vim.fn.executable("cargo") == 1 then
+      cmd = "cd " .. vim.fn.shellescape(cargo_root) .. " && cargo run"
+    elseif vim.fn.executable("rustc") == 1 then
+      local out_dir = "compile"
+      local out = vim.fn.fnamemodify(file, ":t:r")
+      local out_path = out_dir .. "/" .. out
+      cmd = string.format(
+        "mkdir -p %s && rustc %s -o %s && %s",
+        vim.fn.shellescape(out_dir),
+        vim.fn.shellescape(rel),
+        vim.fn.shellescape(out_path),
+        vim.fn.shellescape(out_path)
+      )
+    else
+      vim.notify("Neither cargo nor rustc found in PATH", vim.log.levels.ERROR)
+      return
+    end
+    run_in_buffer_terminal(cmd, cmd)
+    return
+  end
+
+  if file:match("%.zig$") then
+    if vim.fn.executable("zig") ~= 1 then
+      vim.notify("zig not found in PATH", vim.log.levels.ERROR)
+      return
+    end
+    -- Use `zig build run` if build.zig exists, otherwise `zig run <file>`
+    if vim.fn.filereadable(vim.fn.getcwd() .. "/build.zig") == 1 then
+      run_in_buffer_terminal("zig build run", "zig build run")
+    else
+      local cmd = "zig run " .. vim.fn.shellescape(rel)
+      run_in_buffer_terminal(cmd, cmd)
+    end
+    return
+  end
+
+  vim.notify("Buffer runner supports only Python, C/C++, Rust, and Zig", vim.log.levels.WARN)
 end
 
 local function run_python_module_in_terminal()
@@ -199,6 +248,78 @@ local function run_cpp_in_terminal()
   run_in_terminal(cmd, cmd)
 end
 
+local function run_rust_in_terminal()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" then
+    vim.notify("No file to run", vim.log.levels.WARN)
+    return
+  end
+  if not file:match("%.rs$") then
+    vim.notify("Not a Rust file", vim.log.levels.WARN)
+    return
+  end
+
+  local file_dir = vim.fs.dirname(file)
+  local cargo_root = find_cargo_root(file_dir)
+  local cmd
+
+  if cargo_root and vim.fn.executable("cargo") == 1 then
+    cmd = "cd " .. vim.fn.shellescape(cargo_root) .. " && cargo run"
+  elseif vim.fn.executable("rustc") == 1 then
+    local rel = vim.fn.fnamemodify(file, ":.")
+    if rel:sub(1, 2) == ".." then
+      vim.notify("File is outside current working directory", vim.log.levels.ERROR)
+      return
+    end
+    local out_dir = "compile"
+    local out = vim.fn.fnamemodify(file, ":t:r")
+    local out_path = out_dir .. "/" .. out
+    cmd = string.format(
+      "mkdir -p %s && rustc %s -o %s && %s",
+      vim.fn.shellescape(out_dir),
+      vim.fn.shellescape(rel),
+      vim.fn.shellescape(out_path),
+      vim.fn.shellescape(out_path)
+    )
+  else
+    vim.notify("Neither cargo nor rustc found in PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  run_in_terminal(cmd, cmd)
+end
+
+local function run_zig_in_terminal()
+  local file = vim.api.nvim_buf_get_name(0)
+  if file == "" then
+    vim.notify("No file to run", vim.log.levels.WARN)
+    return
+  end
+  if not file:match("%.zig$") then
+    vim.notify("Not a Zig file", vim.log.levels.WARN)
+    return
+  end
+
+  if vim.fn.executable("zig") ~= 1 then
+    vim.notify("zig not found in PATH", vim.log.levels.ERROR)
+    return
+  end
+
+  local rel = vim.fn.fnamemodify(file, ":.")
+  if rel:sub(1, 2) == ".." then
+    vim.notify("File is outside current working directory", vim.log.levels.ERROR)
+    return
+  end
+
+  local cmd
+  if vim.fn.filereadable(vim.fn.getcwd() .. "/build.zig") == 1 then
+    cmd = "zig build run"
+  else
+    cmd = "zig run " .. vim.fn.shellescape(rel)
+  end
+  run_in_terminal(cmd, cmd)
+end
+
 local function run_current_file()
   local file = vim.api.nvim_buf_get_name(0)
   if file == "" then
@@ -218,6 +339,16 @@ local function run_current_file()
 
   if file:match("%.c$") or file:match("%.cc$") or file:match("%.cpp$") or file:match("%.cxx$") then
     run_cpp_in_terminal()
+    return
+  end
+
+  if file:match("%.rs$") then
+    run_rust_in_terminal()
+    return
+  end
+
+  if file:match("%.zig$") then
+    run_zig_in_terminal()
     return
   end
 

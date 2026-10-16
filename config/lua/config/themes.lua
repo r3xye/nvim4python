@@ -1,6 +1,5 @@
 local theme_groups = {
   dark = {
-    "gruvbox-material",
     "gruvbox",
     "tokyonight",
     "catppuccin-mocha",
@@ -9,27 +8,11 @@ local theme_groups = {
     "kanagawa",
     "dracula",
     "everforest",
-    "ayu-dark",
-    "github_dark",
-    "nord",
-    "rose-pine",
-    "material",
-    "sonokai",
-    "nightfly",
-    "oxocarbon",
-    "vscode",
-    "melange",
-    "solarized",
   },
   light = {
     "catppuccin-latte",
     "dayfox",
     "dawnfox",
-    "ayu-light",
-    "github_light",
-    "rose-pine-dawn",
-    "edge",
-    "PaperColor",
   },
 }
 
@@ -39,7 +22,7 @@ for _, group in ipairs({ "dark", "light" }) do
 end
 
 local theme_state_file = vim.fn.stdpath("state") .. "/theme.txt"
-local default_theme = "gruvbox-material"
+local default_theme = "gruvbox"
 local current_theme_index = 1
 local light_themes = {}
 for _, name in ipairs(theme_groups.light) do

@@ -27,6 +27,30 @@ local file_presets = {
       "}",
     },
   },
+  rs = {
+    ext = "rs",
+    ft = "rust",
+    label = "Rust (.rs)",
+    cursor = { 2, 4 },
+    lines = {
+      "fn main() {",
+      "    ",
+      "}",
+    },
+  },
+  zig = {
+    ext = "zig",
+    ft = "zig",
+    label = "Zig (.zig)",
+    cursor = { 4, 4 },
+    lines = {
+      "const std = @import(\"std\");",
+      "",
+      "pub fn main() void {",
+      "    ",
+      "}",
+    },
+  },
   typst = {
     ext = "typst",
     ft = "typst",
@@ -122,6 +146,8 @@ local function select_new_file_preset()
   local choices = {
     file_presets.py,
     file_presets.cpp,
+    file_presets.rs,
+    file_presets.zig,
     file_presets.typst,
   }
 
@@ -146,7 +172,7 @@ local function ensure_dashboard_new_file_command()
 
   vim.api.nvim_create_user_command("DashboardNewFile", function()
     vim.ui.input({
-      prompt = "File name or extension (.py, .cpp, .typst): ",
+      prompt = "File name or extension (.py, .cpp, .rs, .zig, .typst): ",
     }, function(input)
       if input == nil then
         return

@@ -1,6 +1,6 @@
 require("mason").setup()
 require("mason-lspconfig").setup({
-  ensure_installed = { "pyright", "lua_ls", "ruff", "tinymist", "clangd" },
+  ensure_installed = { "pyright", "lua_ls", "ruff", "tinymist", "rust_analyzer", "zls" },
 })
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
@@ -83,11 +83,51 @@ vim.lsp.config("clangd", {
   capabilities = capabilities,
 })
 
+-- Rust LSP (rust-analyzer)
+vim.lsp.config("rust_analyzer", {
+  capabilities = capabilities,
+  settings = {
+    ["rust-analyzer"] = {
+      checkOnSave = true,
+      check = {
+        command = "clippy",
+      },
+      cargo = {
+        allFeatures = true,
+      },
+      procMacro = {
+        enable = true,
+      },
+      inlayHints = {
+        bindingModeHints = { enable = true },
+        chainingHints = { enable = true },
+        closureReturnTypeHints = { enable = "always" },
+        parameterHints = { enable = true },
+        typeHints = { enable = true },
+      },
+    },
+  },
+})
+
+-- Zig LSP (zls)
+vim.lsp.config("zls", {
+  capabilities = capabilities,
+  settings = {
+    zls = {
+      enable_autofix = true,
+      warn_style = true,
+      highlight_global_var_declarations = true,
+    },
+  },
+})
+
 vim.lsp.enable("pyright")
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("ruff")
 vim.lsp.enable("tinymist")
 vim.lsp.enable("clangd")
+vim.lsp.enable("rust_analyzer")
+vim.lsp.enable("zls")
 
 -- Keymaps for LSP
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, { desc = "Go to definition" })

@@ -86,16 +86,12 @@ function M.open_runner()
     vim.fn.termopen(vim.o.shell, {
       on_exit = function()
         vim.schedule(function()
-          if is_valid_buf(buf) then
-            vim.api.nvim_buf_delete(buf, { force = true })
-          end
           runner_state.buf = nil
           runner_state.win = nil
         end)
       end,
     })
 
-    vim.keymap.set("t", "q", close_runner, { buffer = buf, silent = true, nowait = true })
   end
 
   vim.cmd.startinsert()
